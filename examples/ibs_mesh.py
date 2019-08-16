@@ -3,7 +3,6 @@ import numpy as np
 from os import remove
 
 import trimesh
-from open3d import open3d as o3d
 
 import it.util as util
 from  it.training.ibs import IBSMesh
@@ -12,23 +11,16 @@ from  it.training.ibs import IBSMesh
 if __name__ == '__main__':
 
     tri_mesh_obj = trimesh.load_mesh("./data/bowl.ply")
-    od3_mesh_obj = o3d.io.read_triangle_mesh("./data/bowl.ply")
-    od3_cloud_obj_poisson = o3d.geometry.sample_points_poisson_disk( od3_mesh_obj, 400 )
-
-    obj_min_bound = od3_mesh_obj.get_min_bound()
-    obj_max_bound = od3_mesh_obj.get_max_bound()
     
+    obj_min_bound = np.asarray( tri_mesh_obj.vertices ).min(axis=0)
+    obj_max_bound = np.asarray( tri_mesh_obj.vertices ).max(axis=0)
+
     tri_mesh_env = trimesh.load_mesh('./data/table.ply')
+
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, obj_min_bound, obj_max_bound)  
 
-    #it was not possible create a TriangleMesh on the fly, then save an open a ply file
-    trimesh.exchange.export.export_mesh(tri_mesh_env_segmented,"segmented_environment.ply", "ply")
-    od3_mesh_env_segmented = o3d.io.read_triangle_mesh('segmented_environment.ply')
-    remove("segmented_environment.ply")
-    od3_cloud_env_poisson = o3d.geometry.sample_points_poisson_disk( od3_mesh_env_segmented, 400 )
-
-    np_cloud_env_poisson = np.asarray(od3_cloud_env_poisson.points)
-    np_cloud_obj_poisson = np.asarray(od3_cloud_obj_poisson.points)
+    np_cloud_env_poisson = util.sample_points_poisson_disk( tri_mesh_env_segmented, 400 )
+    np_cloud_obj_poisson = util.sample_points_poisson_disk( tri_mesh_obj, 400 )
 
 
     start = time.time() ## timing execution
@@ -43,7 +35,7 @@ if __name__ == '__main__':
     
     visualizer = trimesh.Scene( [ 
                                   trimesh.load_path( np.hstack( ( edges_from, edges_to ) ).reshape(-1, 2, 3) ),
-                                  trimesh.points.PointCloud( np.asarray(od3_cloud_obj_poisson.points) , colors=[0,0,255,255] ),
+                                  trimesh.points.PointCloud( np_cloud_obj_poisson , colors=[0,0,255,255] ),
                                   tri_mesh_obj,
                                 ] )
 
@@ -64,7 +56,7 @@ if __name__ == '__main__':
     
     visualizer2 = trimesh.Scene( [ #trimesh.points.PointCloud( ibs_calculator.cloud_ibs, colors=[255,255,0,255] ), 
                                   trimesh.points.PointCloud( np_ibs_vertices_extracted, colors=[0,255,0,255] ), 
-                                  trimesh.points.PointCloud( np.asarray(od3_cloud_obj_poisson.points) , colors=[0,0,255,255] ),
+                                  trimesh.points.PointCloud( np_cloud_obj_poisson , colors=[0,0,255,255] ),
                                   tri_mesh_obj,
                                   trimesh.points.PointCloud( ibs_calculator.points, colors=[255,0,0,255] ),
                                   trimesh.load_path( np.hstack(( edges_from, edges_to)).reshape(-1, 2, 3) )
