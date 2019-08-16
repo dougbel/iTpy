@@ -86,20 +86,22 @@ def extract_by_distance(np_cloud, np_pivot, distance):
     return idx, np_cloud[idx]
     
 
-def get_edges(vertices, ridge_vertices, idx_extracted):
+def get_edges( vertices, ridge_vertices, idx_extracted=None ):
 
     #cutting faces in the polygon mesh
     faces_idx_ridges_from = []
     faces_idx_ridges_to = []
     for ridge in ridge_vertices:
         if  -1 in ridge: continue
-        face_in_boundary = True
-        for idx_vertice in ridge:
-            if idx_vertice not in idx_extracted:
-                face_in_boundary = False
-                break
-        if not face_in_boundary:
-            continue
+        if idx_extracted != None:
+            face_in_boundary = True
+            for idx_vertice in ridge:
+                if idx_vertice not in idx_extracted:
+                    face_in_boundary = False
+                    break
+            if not face_in_boundary:
+                continue
+
         for i in range( -1, len(ridge)-1 ):
             faces_idx_ridges_from.append(ridge[i])
             faces_idx_ridges_to.append(ridge[i+1])
