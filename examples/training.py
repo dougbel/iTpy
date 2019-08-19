@@ -9,21 +9,26 @@ from it.training.agglomerator import Agglomerator
 
 
 if __name__ == '__main__':
+
+    obj_name = "bowl"
+    obj_mesh_file = "./data/bowl.ply"
+    env_name = "table"
+    env_mesh_file = "./data/table.ply"
+    affordance_name = "Place"
+
+
                                   
-    tri_mesh_obj = trimesh.load_mesh("./data/bowl.ply")
+    tri_mesh_obj = trimesh.load_mesh( obj_mesh_file)
     
     obj_min_bound = np.asarray( tri_mesh_obj.vertices ).min(axis=0)
     obj_max_bound = np.asarray( tri_mesh_obj.vertices ).max(axis=0)
     
-    tri_mesh_env = trimesh.load_mesh('./data/table.ply')
+    tri_mesh_env = trimesh.load_mesh( env_mesh_file )
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, obj_min_bound, obj_max_bound)  
 
-    np_cloud_env_poisson = util.sample_points_poisson_disk( tri_mesh_env_segmented, 400 )
-    np_cloud_obj_poisson = util.sample_points_poisson_disk( tri_mesh_obj, 400 )
-
-
-    ibs_calculator = IBSMesh( np_cloud_env_poisson,tri_mesh_env,  np_cloud_obj_poisson, tri_mesh_obj )
+    
+    ibs_calculator = IBSMesh( tri_mesh_env,  tri_mesh_obj )
     
     ################################
     #GENERATING AND SEGMENTING IBS MESH
@@ -37,10 +42,22 @@ if __name__ == '__main__':
     
     tri_mesh_ibs_segmented = util.slide_mesh_by_sphere( tri_mesh_ibs, sphere_center, sphere_ro ) 
 
-    np_cloud_ibs = util.sample_points_poisson_disk(tri_mesh_ibs, Trainer.SAMPLE_SIZE*3)
     
-    trainer = Trainer( np_cloud_ibs, tri_mesh_env )
+    trainer = Trainer( tri_mesh_ibs_segmented, tri_mesh_env )
 
     agg = Agglomerator(trainer)
 
-    agg.save_agglomerated_iT( "Place", "table", "bowl" )
+    agg.save_agglomerated_iT( affordance_name, env_name, obj_name )
+
+
+    #VISUALIZATION
+    provenance_vectors = trimesh.load_path( np.hstack(( trainer.pv_points, trainer.pv_points + trainer.pv_vectors )).reshape(-1, 2, 3) )
+    
+    tri_mesh_obj.visual.face_colors = [0, 255, 0, 100]
+
+    scene = trimesh.Scene( [ 
+                            provenance_vectors,
+                            tri_mesh_obj,
+                            tri_mesh_env
+                            ])
+    scene.show()

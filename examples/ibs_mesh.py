@@ -19,12 +19,8 @@ if __name__ == '__main__':
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, obj_min_bound, obj_max_bound)  
 
-    np_cloud_env_poisson = util.sample_points_poisson_disk( tri_mesh_env_segmented, 400 )
-    np_cloud_obj_poisson = util.sample_points_poisson_disk( tri_mesh_obj, 400 )
-
-
     start = time.time() ## timing execution
-    ibs_calculator = IBSMesh( np_cloud_env_poisson,tri_mesh_env,  np_cloud_obj_poisson, tri_mesh_obj )  
+    ibs_calculator = IBSMesh( tri_mesh_env_segmented,  tri_mesh_obj )  
     end = time.time() ## timing execution
     print (end - start , " seconds on IBS calculation (400 original points)" )  ## timing execution
 
@@ -35,7 +31,7 @@ if __name__ == '__main__':
     
     visualizer = trimesh.Scene( [ 
                                   trimesh.load_path( np.hstack( ( edges_from, edges_to ) ).reshape(-1, 2, 3) ),
-                                  trimesh.points.PointCloud( np_cloud_obj_poisson , colors=[0,0,255,255] ),
+                                  #trimesh.points.PointCloud( np_cloud_obj_poisson , colors=[0,0,255,255] ),
                                   tri_mesh_obj,
                                 ] )
 
@@ -56,8 +52,9 @@ if __name__ == '__main__':
     
     visualizer2 = trimesh.Scene( [ #trimesh.points.PointCloud( ibs_calculator.cloud_ibs, colors=[255,255,0,255] ), 
                                   trimesh.points.PointCloud( np_ibs_vertices_extracted, colors=[0,255,0,255] ), 
-                                  trimesh.points.PointCloud( np_cloud_obj_poisson , colors=[0,0,255,255] ),
-                                  tri_mesh_obj,
+                                  #trimesh.points.PointCloud( np_cloud_obj_poisson , colors=[0,0,255,255] ),
+                                  #tri_mesh_obj,
+                                  tri_mesh_env_segmented,
                                   trimesh.points.PointCloud( ibs_calculator.points, colors=[255,0,0,255] ),
                                   trimesh.load_path( np.hstack(( edges_from, edges_to)).reshape(-1, 2, 3) )
                                   ] )

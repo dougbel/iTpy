@@ -1,8 +1,10 @@
-import trimesh
 import numpy as np
-from open3d import open3d as o3d
 from scipy.spatial import Voronoi
-from os import remove
+
+import trimesh
+
+import it.util as util
+
 
 
 class IBS:
@@ -65,33 +67,34 @@ class IBS:
 
 class IBSMesh( IBS ):
 
-    def __init__(self, cloud_env, tri_mesh_env, cloud_obj, tri_mesh_obj):
+    def __init__(self, tri_mesh_env, tri_mesh_obj, size_sampling = 400):
+
+        np_cloud_env_poisson = util.sample_points_poisson_disk( tri_mesh_env, size_sampling )
+
+        np_cloud_obj_poisson = util.sample_points_poisson_disk( tri_mesh_obj, size_sampling )
+
+        np_cloud_obj = self.project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj_poisson, np_cloud_env_poisson )
+
+        np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env_poisson, np_cloud_obj )
+
+        np_cloud_obj = self.project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj_poisson, np_cloud_env )
         
-        #####
-        ( obj_points_in_env, __ , __) = tri_mesh_env.nearest.on_surface( cloud_obj )
+        np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
         
-        np_cloud_env = np.empty( (len(cloud_env) + len(obj_points_in_env) ,3) )
-
-        np_cloud_env[:len(cloud_env)] = cloud_env
-        np_cloud_env[len(cloud_env):] = obj_points_in_env
-
-        #####
-        ( env_points_in_obj, __ , __) = tri_mesh_obj.nearest.on_surface( np_cloud_env )
-
-        np_cloud_obj = np.empty( (len(cloud_obj) + len(env_points_in_obj) ,3) )
-
-        np_cloud_obj[:len(cloud_obj)] = cloud_obj
-        np_cloud_obj[len(cloud_obj):] = env_points_in_obj
-        np_cloud_obj = np.unique(np_cloud_obj ,axis=0 )
-
-        #####
-        ( obj_points_in_env, __ , __) = tri_mesh_env.nearest.on_surface( np_cloud_obj )
+        np_cloud_obj = self.project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj, np_cloud_env )
         
-        np_cloud_env_final = np.empty( (len(np_cloud_env) + len(obj_points_in_env) ,3) )
+        np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
 
-        np_cloud_env_final[:len(np_cloud_env)] = np_cloud_env
-        np_cloud_env_final[len(np_cloud_env):] = obj_points_in_env
+        super( IBSMesh, self ).__init__( np_cloud_env, np_cloud_obj )
+
+
+    def project_points_in_sampled_mesh(self, tri_mesh_sampled, np_sample, np_to_project):
+        ( nearest_points, __ , __) = tri_mesh_sampled.nearest.on_surface( np_to_project )
         
-        #####
+        np_new_sample = np.empty( (len(np_sample) + len(nearest_points) ,3) )
 
-        super( IBSMesh, self ).__init__( np_cloud_env_final, np_cloud_obj )
+        np_new_sample[:len(np_sample)] = np_sample
+        np_new_sample[len(np_sample):] = nearest_points
+        np_new_sample = np.unique(np_new_sample ,axis=0 )
+    
+        return np_new_sample
