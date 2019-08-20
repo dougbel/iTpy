@@ -6,3 +6,5 @@ it/training/__pycache__/
 \.vscode/
 
 output/
+
+it/testing/__pycache__/

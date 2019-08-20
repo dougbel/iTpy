@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     agg = Agglomerator(trainer)
 
-    agg.save_agglomerated_iT( affordance_name, env_name, obj_name )
+    agg.save_agglomerated_iT( affordance_name, env_name, obj_name, tri_mesh_env, tri_mesh_obj, tri_mesh_ibs_segmented, tri_mesh_ibs )
 
 
     #VISUALIZATION

@@ -36,7 +36,7 @@ class Agglomerator:
         
 
 
-    def save_agglomerated_iT(self, affordances_name, scene_name, object_name):
+    def save_agglomerated_iT(self, affordances_name, scene_name, object_name, tri_mesh_env, tri_mesh_obj, tri_mesh_ibs_segmented, tri_mesh_ibs=None  ):
         
         directory = self.OUTPURDIR + affordances_name + "/"
 
@@ -56,6 +56,15 @@ class Agglomerator:
 
         pcd.points = o3d.utility.Vector3dVector(self.agglomerated_pv_vdata)
         o3d.io.write_point_cloud(file_name_pattern+"_vdata.pcd", pcd, write_ascii = True)
+
+
+        tri_mesh_ibs.export(directory + affordances_name + "_" + object_name + "_ibs_mesh.ply","ply")
+
+        tri_mesh_ibs_segmented.export(directory + affordances_name + "_" + object_name + "_ibs_mesh_segmented.ply","ply")
+
+        tri_mesh_env.export(directory + affordances_name + "_" +  object_name + "_environment.ply","ply")
+
+        tri_mesh_obj.export(directory + affordances_name + "_" +  object_name + "_object.ply","ply")
 
 
     def __save_info(self, directory, affordances_name, scene_name, object_name):
