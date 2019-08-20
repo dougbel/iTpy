@@ -17,10 +17,14 @@ if __name__ == '__main__':
     
     tri_mesh_env = trimesh.load_mesh('./data/table.ply')
 
-    tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, obj_min_bound, obj_max_bound)  
+
+    extension = np.linalg.norm(obj_max_bound-obj_min_bound)
+    middle_point = (obj_max_bound+obj_min_bound)/2
+    
+    tri_mesh_env_segmented = util.slide_mesh_by_bounding_box( tri_mesh_env, middle_point, extension )  
 
     start = time.time() ## timing execution
-    ibs_calculator = IBSMesh( tri_mesh_env_segmented, tri_mesh_obj, 400 )
+    ibs_calculator = IBSMesh( tri_mesh_env_segmented, tri_mesh_obj, 400, 4 )
     end = time.time() ## timing execution
     print (end - start , " seconds on IBS calculation (400 original points)" )  ## timing execution
     
@@ -41,7 +45,7 @@ if __name__ == '__main__':
     print (end - start , " seconds on IBS MESH GENERATION AND SEGMENTATION" )  ## timing execution
 
     
-    tri_mesh_ibs_segmented.export("ibs_mesh_segmented.ply","ply")
+    #tri_mesh_ibs_segmented.export("ibs_mesh_segmented.ply","ply")
 
     print( "is convex:" + str(tri_mesh_ibs.is_convex))
     print( "is empty:" + str(tri_mesh_ibs.is_empty))

@@ -36,7 +36,7 @@ if __name__ == '__main__':
     radio = np.linalg.norm( obj_max_bound - obj_min_bound )
     np_pivot = np.asarray( obj_max_bound + obj_min_bound ) / 2
 
-    [ idx_extracted, np_ibs_vertices_extracted ]= util.extract_by_distance( ibs_calculator.vertices, np_pivot, radio )
+    [ idx_extracted, np_ibs_vertices_extracted ]= util.extract_cloud_by_sphere( ibs_calculator.vertices, np_pivot, radio )
 
     edges_from, edges_to = util.get_edges( ibs_calculator.vertices, ibs_calculator.ridge_vertices, idx_extracted )
 
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     radio = np.linalg.norm( obj_max_bound - obj_min_bound )
     np_pivot = np.asarray( obj_max_bound + obj_min_bound ) / 2
     
-    [ idx_extracted, np_ibs_vertices_extracted ]= util.extract_by_distance( ibs_calculator.vertices, np_pivot, radio )
+    [ idx_extracted, np_ibs_vertices_extracted ]= util.extract_cloud_by_sphere( ibs_calculator.vertices, np_pivot, radio )
     
     edges_from, edges_to = util.get_edges( ibs_calculator.vertices, ibs_calculator.ridge_vertices, idx_extracted )
 

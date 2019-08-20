@@ -5,6 +5,7 @@ import trimesh
 import it.util as util
 from it.training.ibs import IBSMesh
 from it.training.trainer import Trainer
+from it.training.trainer import MeshSamplingMethod as msm
 from it.training.agglomerator import Agglomerator
 
 
@@ -25,10 +26,14 @@ if __name__ == '__main__':
     
     tri_mesh_env = trimesh.load_mesh( env_mesh_file )
 
-    tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, obj_min_bound, obj_max_bound)  
+
+    extension = np.linalg.norm(obj_max_bound-obj_min_bound)
+    middle_point = (obj_max_bound+obj_min_bound)/2
+    
+    tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)  
 
     
-    ibs_calculator = IBSMesh( tri_mesh_env,  tri_mesh_obj )
+    ibs_calculator = IBSMesh( tri_mesh_env_segmented,  tri_mesh_obj, 400, 4 )
     
     ################################
     #GENERATING AND SEGMENTING IBS MESH
@@ -43,7 +48,9 @@ if __name__ == '__main__':
     tri_mesh_ibs_segmented = util.slide_mesh_by_sphere( tri_mesh_ibs, sphere_center, sphere_ro ) 
 
     
-    trainer = Trainer( tri_mesh_ibs_segmented, tri_mesh_env )
+    trainer = Trainer( tri_mesh_ibs = tri_mesh_ibs_segmented, 
+                        tri_mesh_env = tri_mesh_env, 
+                        sampling_method = msm.ON_MESH_BY_POISSON )
 
     agg = Agglomerator(trainer)
 
@@ -53,11 +60,14 @@ if __name__ == '__main__':
     #VISUALIZATION
     provenance_vectors = trimesh.load_path( np.hstack(( trainer.pv_points, trainer.pv_points + trainer.pv_vectors )).reshape(-1, 2, 3) )
     
-    tri_mesh_obj.visual.face_colors = [0, 255, 0, 100]
+    tri_mesh_obj.visual.face_colors = [0, 255, 0, 200]
+    tri_mesh_ibs_segmented.visual.face_colors = [0, 0, 255, 100]
+    tri_mesh_env.visual.face_colors = [200, 200, 200, 150]
 
     scene = trimesh.Scene( [ 
-                            provenance_vectors,
                             tri_mesh_obj,
-                            tri_mesh_env
+                            tri_mesh_env,
+                            tri_mesh_ibs_segmented,
+                            provenance_vectors
                             ])
     scene.show()

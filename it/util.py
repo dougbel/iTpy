@@ -16,18 +16,14 @@ def sample_points_poisson_disk(tri_mesh, number_of_points, init_factor=5):
 
 
 
-def slide_mesh_by_bounding_box( trimesh_mesh, min_bounding_box, max_bounding_box ):
-    
-    extension = np.linalg.norm(max_bounding_box-min_bounding_box)
+def slide_mesh_by_bounding_box( trimesh_mesh, box_center, box_extension ):
 
-    middle_point = (max_bounding_box+min_bounding_box)/2
-
-    max_x_plane = middle_point + np.array([extension,0,0])
-    min_x_plane = middle_point - np.array([extension,0,0])
-    max_y_plane = middle_point + np.array([0,extension,0])
-    min_y_plane = middle_point - np.array([0,extension,0])
-    max_z_plane = middle_point + np.array([0,0,extension])
-    min_z_plane = middle_point - np.array([0,0,extension])
+    max_x_plane = box_center + np.array([box_extension,0,0])
+    min_x_plane = box_center - np.array([box_extension,0,0])
+    max_y_plane = box_center + np.array([0,box_extension,0])
+    min_y_plane = box_center - np.array([0,box_extension,0])
+    max_z_plane = box_center + np.array([0,0,box_extension])
+    min_z_plane = box_center - np.array([0,0,box_extension])
 
     extracted = trimesh_mesh.slice_plane(plane_normal=np.array([-1,0,0]), plane_origin= max_x_plane )
     extracted = extracted.slice_plane(plane_normal=np.array([1,0,0]), plane_origin= min_x_plane )
@@ -43,7 +39,7 @@ def slide_mesh_by_bounding_box( trimesh_mesh, min_bounding_box, max_bounding_box
 
 
 
-def slide_mesh_by_sphere( tri_mesh, sphere_center, sphere_ro, level=8 ):
+def slide_mesh_by_sphere( tri_mesh, sphere_center, sphere_ro, level=16 ):
     #angle with respect X axis and Z
     angle = [ x*2*math.pi/level  for x in range(level)]
     output_mesh = trimesh.Trimesh(vertices=tri_mesh.vertices,
@@ -62,18 +58,14 @@ def slide_mesh_by_sphere( tri_mesh, sphere_center, sphere_ro, level=8 ):
 
 
 
-def extract_pc( np_cloud, min_bounding_box, max_bounding_box ):
+def extract_pc( np_cloud, box_center, box_extension ):    #TODO change this by a sign as "slide_mesh_by_bounding_box"
     
-    extension = np.linalg.norm(max_bounding_box-min_bounding_box)
-
-    middle_point = (max_bounding_box+min_bounding_box)/2
-
-    max_x_plane = middle_point[0] + extension
-    min_x_plane = middle_point[0] - extension
-    max_y_plane = middle_point[1] + extension
-    min_y_plane = middle_point[1] - extension
-    max_z_plane = middle_point[2] + extension
-    min_z_plane = middle_point[2] - extension
+    max_x_plane = box_center[0] + box_extension
+    min_x_plane = box_center[0] - box_extension
+    max_y_plane = box_center[1] + box_extension
+    min_y_plane = box_center[1] - box_extension
+    max_z_plane = box_center[2] + box_extension
+    min_z_plane = box_center[2] - box_extension
     
     extracted = [point for point in np_cloud  if  point[0] > min_x_plane]
     extracted = [point for point in extracted  if  point[0] < max_x_plane]
@@ -85,7 +77,8 @@ def extract_pc( np_cloud, min_bounding_box, max_bounding_box ):
     return np.asarray(extracted)
 
 
-def extract_by_distance(np_cloud, np_pivot, distance):
+
+def extract_cloud_by_sphere(np_cloud, np_sphere_centre, sphere_ro):
 
     o3d_cloud = o3d.geometry.PointCloud()
     o3d_cloud.points = o3d.utility.Vector3dVector(np_cloud)
@@ -93,7 +86,7 @@ def extract_by_distance(np_cloud, np_pivot, distance):
     pcd_tree = o3d.geometry.KDTreeFlann( o3d_cloud )
 
     #it returns 1: number of point returned, 2: idx of point returned, 3: distances
-    [__, idx, __] = pcd_tree.search_radius_vector_3d( np_pivot , distance )
+    [__, idx, __] = pcd_tree.search_radius_vector_3d( np_sphere_centre , sphere_ro )
 
     return idx, np_cloud[idx]
     

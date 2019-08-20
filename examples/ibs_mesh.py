@@ -17,10 +17,13 @@ if __name__ == '__main__':
 
     tri_mesh_env = trimesh.load_mesh('./data/table.ply')
 
-    tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, obj_min_bound, obj_max_bound)  
+    extension = np.linalg.norm(obj_max_bound-obj_min_bound)
+    middle_point = (obj_max_bound+obj_min_bound)/2
+    
+    tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)  
 
     start = time.time() ## timing execution
-    ibs_calculator = IBSMesh( tri_mesh_env_segmented,  tri_mesh_obj )  
+    ibs_calculator = IBSMesh( tri_mesh_env_segmented,  tri_mesh_obj, 400, 4 )  
     end = time.time() ## timing execution
     print (end - start , " seconds on IBS calculation (400 original points)" )  ## timing execution
 
@@ -44,7 +47,7 @@ if __name__ == '__main__':
     #extracting point no farther than the principal sphere
     radio = np.linalg.norm( obj_max_bound - obj_min_bound )
     np_pivot = np.asarray( obj_max_bound + obj_min_bound ) / 2
-    [idx_extracted, np_ibs_vertices_extracted ]= util.extract_by_distance( ibs_calculator.vertices, np_pivot, radio )
+    [idx_extracted, np_ibs_vertices_extracted ]= util.extract_cloud_by_sphere( ibs_calculator.vertices, np_pivot, radio )
 
     #cutting edges in the polygon mesh
     edges_from, edges_to = util.get_edges( ibs_calculator.vertices, ibs_calculator.ridge_vertices, idx_extracted )
