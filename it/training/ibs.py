@@ -67,7 +67,7 @@ class IBS:
 
 class IBSMesh( IBS ):
 
-    def __init__(self, tri_mesh_env, tri_mesh_obj, size_sampling = 400):
+    def __init__(self, tri_mesh_env, tri_mesh_obj, size_sampling = 400, resamplings = 4):
 
         np_cloud_env_poisson = util.sample_points_poisson_disk( tri_mesh_env, size_sampling )
 
@@ -77,13 +77,13 @@ class IBSMesh( IBS ):
 
         np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env_poisson, np_cloud_obj )
 
-        np_cloud_obj = self.project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj_poisson, np_cloud_env )
-        
-        np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
-        
-        np_cloud_obj = self.project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj, np_cloud_env )
-        
-        np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
+        for i in range(1,resamplings):
+            
+            np_cloud_obj = self.project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj, np_cloud_env )
+
+            np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
+            
+
 
         super( IBSMesh, self ).__init__( np_cloud_env, np_cloud_obj )
 
