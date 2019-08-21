@@ -30,13 +30,13 @@ def visualize ( trainer, tri_mesh_env, tri_mesh_obj ):
 
 if __name__ == '__main__':
 
-    tri_mesh_ibs = trimesh.load_mesh('./data/pv/ibs_mesh_segmented.ply')
+    tri_mesh_ibs_segmented = trimesh.load_mesh('./data/pv/ibs_mesh_segmented.ply')
     
     tri_mesh_env = trimesh.load_mesh('./data/table.ply')
 
-    trainer_poisson = Trainer( tri_mesh_ibs, tri_mesh_env, msm.ON_MESH_BY_POISSON )
+    trainer_poisson = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_BY_POISSON )
     
-    trainer_vertices = Trainer( tri_mesh_ibs, tri_mesh_env, msm.ON_MESH_VERTICES )
+    trainer_vertices = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_VERTICES )
 
 
 
