@@ -41,9 +41,9 @@ if __name__ == '__main__':
     edges_from, edges_to = util.get_edges( ibs_calculator.vertices, ibs_calculator.ridge_vertices, idx_extracted )
 
     
-    visualizer = trimesh.Scene( [ trimesh.points.PointCloud( np_ibs_vertices_extracted, colors=[0,255,0,255] ), 
-                                  trimesh.points.PointCloud( np.asarray(od3_cloud_obj_poisson.points) , colors=[0,0,255,255] ),
-                                  trimesh.points.PointCloud( np.asarray(od3_cloud_env_poisson.points), colors=[255,0,0,255] ),
+    visualizer = trimesh.Scene( [ trimesh.points.PointCloud( np_ibs_vertices_extracted, colors=[0,0,255,255] ), 
+                                  trimesh.points.PointCloud( np.asarray(od3_cloud_obj_poisson.points) , colors=[0,255,0,255] ),
+                                  trimesh.points.PointCloud( np.asarray(od3_cloud_env_poisson.points), colors=[100,100,100,255] ),
                                   trimesh.load_path( np.hstack( ( edges_from, edges_to) ).reshape(-1, 2, 3))
                                   ] )
 
@@ -82,9 +82,9 @@ if __name__ == '__main__':
     edges_from, edges_to = util.get_edges( ibs_calculator.vertices, ibs_calculator.ridge_vertices, idx_extracted )
 
     
-    visualizer = trimesh.Scene( [ trimesh.points.PointCloud( np_ibs_vertices_extracted, colors=[0,255,0,255] ), 
-                                  trimesh.points.PointCloud( np.asarray(od3_cloud_obj_poisson.points) , colors=[0,0,255,255] ),
-                                  trimesh.points.PointCloud( np.asarray(od3_cloud_env_poisson.points), colors=[255,0,0,255] ),
+    visualizer = trimesh.Scene( [ trimesh.points.PointCloud( np_ibs_vertices_extracted, colors=[0,0,255,255] ), 
+                                  trimesh.points.PointCloud( np.asarray(od3_cloud_obj_poisson.points) , colors=[0,255,0,255] ),
+                                  trimesh.points.PointCloud( np.asarray(od3_cloud_env_poisson.points), colors=[100,100,100,255] ),
                                   trimesh.load_path( np.hstack( ( edges_from, edges_to) ).reshape(-1, 2, 3))
                                   ] )
 

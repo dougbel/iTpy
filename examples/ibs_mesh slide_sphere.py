@@ -60,7 +60,7 @@ if __name__ == '__main__':
     tri_mesh_obj.visual.face_colors = [0, 255, 0, 100]
     tri_mesh_env.visual.face_colors = [100, 100, 100, 100]
     tri_mesh_ibs_segmented.visual.face_colors = [0, 0, 150, 100]
-    tri_mesh_ibs.visual.face_colors = [255, 0, 0, 50]
+    tri_mesh_ibs.visual.face_colors = [0, 0, 150, 100]
 
     visualizer3 = trimesh.Scene([ 
                                 tri_mesh_env, 

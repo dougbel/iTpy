@@ -30,7 +30,7 @@ if __name__ == '__main__':
     
     ########################################################################################################################
     # 1. IBS VISUALIZATION
-    edges_from, edges_to = util.get_edges( ibs_calculator.vertices, ibs_calculator.ridge_vertices )
+    '''edges_from, edges_to = util.get_edges( ibs_calculator.vertices, ibs_calculator.ridge_vertices )
     
     visualizer = trimesh.Scene( [ 
                                   trimesh.load_path( np.hstack( ( edges_from, edges_to ) ).reshape(-1, 2, 3) ),
@@ -38,7 +38,7 @@ if __name__ == '__main__':
                                   tri_mesh_obj,
                                 ] )
 
-    visualizer.show()
+    visualizer.show()'''
 
 
     ########################################################################################################################
@@ -53,12 +53,15 @@ if __name__ == '__main__':
     edges_from, edges_to = util.get_edges( ibs_calculator.vertices, ibs_calculator.ridge_vertices, idx_extracted )
 
     
-    visualizer2 = trimesh.Scene( [ #trimesh.points.PointCloud( ibs_calculator.cloud_ibs, colors=[255,255,0,255] ), 
-                                  trimesh.points.PointCloud( np_ibs_vertices_extracted, colors=[0,255,0,255] ), 
+    tri_mesh_obj.visual.face_colors = [0, 255, 0, 100]
+    tri_mesh_env_segmented.visual.face_colors = [100,100,100,100]
+    
+    visualizer2 = trimesh.Scene( [ #trimesh.points.PointCloud( ibs_calculator.cloud_ibs, colors=[0,0,255,255] ), 
                                   #trimesh.points.PointCloud( np_cloud_obj_poisson , colors=[0,0,255,255] ),
-                                  #tri_mesh_obj,
+                                  tri_mesh_obj,
                                   tri_mesh_env_segmented,
-                                  trimesh.points.PointCloud( ibs_calculator.points, colors=[255,0,0,255] ),
+                                  trimesh.points.PointCloud( ibs_calculator.points, colors=[0,0,0,100] ),
+                                  trimesh.points.PointCloud( np_ibs_vertices_extracted, colors=[0,0,255,255] ), 
                                   trimesh.load_path( np.hstack(( edges_from, edges_to)).reshape(-1, 2, 3) )
                                   ] )
 

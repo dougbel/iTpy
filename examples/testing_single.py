@@ -12,7 +12,6 @@ if __name__ == '__main__':
 
     tester = Tester("./data/it", "./data/it/single_testing.json")
     scene = trimesh.load_mesh('./data/it/gates400.ply',process=False)
-    scene.visual.face_colors = [100, 100, 100, 100]
 
 
     idx_ray, intersections = tester.intersections_with_scene(scene, [-0.97178262, -0.96805501,  0.82638292])
@@ -25,7 +24,6 @@ if __name__ == '__main__':
     tri_mesh_object_file = "./data/it/" + affordance_name + "/" + affordance_name + "_" + affordance_object + "_object.ply"
 
     bowl        = trimesh.load_mesh( tri_mesh_object_file, process=False)
-    bowl.visual.face_colors = [10, 255, 10, 100]
     bowl.apply_translation( [-0.97178262, -0.96805501,  0.82638292] )
 
 
@@ -43,6 +41,8 @@ if __name__ == '__main__':
     pv_intersections = intersections[:512]
 
 
+    scene.visual.face_colors = [100, 100, 100, 100]
+    bowl.visual.face_colors = [0, 255, 0, 100]
     scene = trimesh.Scene( [ #trimesh.points.PointCloud(tests.compiled_sampled_points), 
                             #trimesh.points.PointCloud(tests.compiled_pv_end), 
                             provenance_vectors,
