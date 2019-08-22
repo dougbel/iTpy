@@ -11,12 +11,12 @@ class IBS:
 
     def __init__( self, np_cloud_env, np_cloud_obj ):
 
-        size_cloud_env = np_cloud_env.shape[0]
+        self.size_cloud_env = np_cloud_env.shape[0]
         size_cloud_obj = np_cloud_obj.shape[0]
 
-        self.points = np.empty( ( size_cloud_env + size_cloud_obj, 3 ), np.float64 )
-        self.points[:size_cloud_env] = np_cloud_env
-        self.points[size_cloud_env:] = np_cloud_obj
+        self.points = np.empty( ( self.size_cloud_env + size_cloud_obj, 3 ), np.float64 )
+        self.points[:self.size_cloud_env] = np_cloud_env
+        self.points[self.size_cloud_env:] = np_cloud_obj
 
         voro = Voronoi( self.points )
 
@@ -25,12 +25,12 @@ class IBS:
 
         #check the region formed around point in the environment
         #point_region : Index of the Voronoi region for each input point
-        for env_idx_region in voro.point_region[ :size_cloud_env ] :
+        for env_idx_region in voro.point_region[ :self.size_cloud_env ] :
             #voronoi region of environment point
             #regions: Indices of the Voronoi vertices forming each Voronoi region
             env_idx_vertices +=  voro.regions[ env_idx_region ]
 
-        for obj_idx_region in voro.point_region[ size_cloud_env: ] :
+        for obj_idx_region in voro.point_region[ self.size_cloud_env: ] :
             #voronoi region of object point
             obj_idx_vertices += voro.regions[ obj_idx_region ] 
 
@@ -73,22 +73,22 @@ class IBSMesh( IBS ):
 
         np_cloud_obj_poisson = util.sample_points_poisson_disk( tri_mesh_obj, size_sampling )
 
-        np_cloud_obj = self.project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj_poisson, np_cloud_env_poisson )
+        np_cloud_obj = self.__project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj_poisson, np_cloud_env_poisson )
 
-        np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env_poisson, np_cloud_obj )
+        np_cloud_env = self.__project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env_poisson, np_cloud_obj )
 
         for i in range(1,resamplings):
             
-            np_cloud_obj = self.project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj, np_cloud_env )
+            np_cloud_obj = self.__project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj, np_cloud_env )
 
-            np_cloud_env = self.project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
+            np_cloud_env = self.__project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
             
 
 
         super( IBSMesh, self ).__init__( np_cloud_env, np_cloud_obj )
 
 
-    def project_points_in_sampled_mesh(self, tri_mesh_sampled, np_sample, np_to_project):
+    def __project_points_in_sampled_mesh(self, tri_mesh_sampled, np_sample, np_to_project):
         ( nearest_points, __ , __) = tri_mesh_sampled.nearest.on_surface( np_to_project )
         
         np_new_sample = np.empty( (len(np_sample) + len(nearest_points) ,3) )
