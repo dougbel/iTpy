@@ -67,7 +67,7 @@ class IBS:
 
 class IBSMesh( IBS ):
 
-    def __init__(self, tri_mesh_env, tri_mesh_obj, size_sampling = 400, resamplings = 4):
+    def __init__(self, tri_mesh_env, tri_mesh_obj, size_sampling = 400, resamplings = 4, improve_by_collission = True):
 
         np_cloud_env_poisson = util.sample_points_poisson_disk( tri_mesh_env, size_sampling )
 
@@ -83,6 +83,17 @@ class IBSMesh( IBS ):
 
             np_cloud_env = self.__project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
             
+            
+        if improve_by_collission:
+
+            self.__improve_sampling_by_collision_test(tri_mesh_env, tri_mesh_obj, np_cloud_env, np_cloud_obj)
+
+        else:
+            
+            super( IBSMesh, self ).__init__( np_cloud_env, np_cloud_obj )
+                  
+
+    def __improve_sampling_by_collision_test(self, tri_mesh_env, tri_mesh_obj, np_cloud_env, np_cloud_obj):
         
         collision_tester = trimesh.collision.CollisionManager()
         collision_tester.add_object('env',tri_mesh_env)
@@ -111,15 +122,21 @@ class IBSMesh( IBS ):
                     contact_points_env.append( data[i].point ) 
                 if "obj" in data[i].names:
                     contact_points_obj.append( data[i].point ) 
-                    
-            np_contact_points_env = np.asarray ( contact_points_env )
-            np_contact_points_obj = np.asarray ( contact_points_obj )
 
-            np_cloud_env = np.concatenate((np_cloud_env, np_contact_points_env ))
-            np_cloud_obj = np.concatenate((np_cloud_obj, np_contact_points_obj ))
+            if( len( contact_points_env ) > 0 ):
+                np_contact_points_env = np.asarray ( contact_points_env )
+                np_cloud_env = np.concatenate((np_cloud_env, np_contact_points_env ))
 
-            np_cloud_env = self.__project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_contact_points_obj )
-            np_cloud_obj = self.__project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj, np_contact_points_env )
+            if( len( contact_points_obj ) > 0 ):
+                np_contact_points_obj = np.asarray ( contact_points_obj ).reshape( -1, 3 )
+                np_cloud_obj = np.concatenate((np_cloud_obj, np_contact_points_obj ))
+            
+            if( len( contact_points_env ) > 0 ):
+                np_cloud_obj = self.__project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj, np_contact_points_env )
+
+            if( len( contact_points_obj ) > 0 ):
+                np_cloud_env = self.__project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_contact_points_obj )
+            
                   
 
 
