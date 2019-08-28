@@ -83,12 +83,50 @@ class IBSMesh( IBS ):
 
             np_cloud_env = self.__project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_cloud_obj )
             
+        
+        collision_tester = trimesh.collision.CollisionManager()
+        collision_tester.add_object('env',tri_mesh_env)
+        collision_tester.add_object('obj',tri_mesh_obj)
+        in_collision = True
 
+        while in_collision :
 
-        super( IBSMesh, self ).__init__( np_cloud_env, np_cloud_obj )
+            super( IBSMesh, self ).__init__( np_cloud_env, np_cloud_obj )
+
+            tri_mesh_ibs = self.get_trimesh()
+
+            in_collision, data = collision_tester.in_collision_single(tri_mesh_ibs, return_data=True)
+
+            if not in_collision:
+                break
+            
+            print(" ------------------ ")
+            print("puntos de contacto: ", len(data) )
+
+            contact_points_obj = []
+            contact_points_env = []
+
+            for i in range(len(data)):
+                if "env" in data[i].names:
+                    contact_points_env.append( data[i].point ) 
+                if "obj" in data[i].names:
+                    contact_points_obj.append( data[i].point ) 
+                    
+            np_contact_points_env = np.asarray ( contact_points_env )
+            np_contact_points_obj = np.asarray ( contact_points_obj )
+
+            np_cloud_env = np.concatenate((np_cloud_env, np_contact_points_env ))
+            np_cloud_obj = np.concatenate((np_cloud_obj, np_contact_points_obj ))
+
+            np_cloud_env = self.__project_points_in_sampled_mesh( tri_mesh_env, np_cloud_env, np_contact_points_obj )
+            np_cloud_obj = self.__project_points_in_sampled_mesh( tri_mesh_obj, np_cloud_obj, np_contact_points_env )
+                  
 
 
     def __project_points_in_sampled_mesh(self, tri_mesh_sampled, np_sample, np_to_project):
+        if np_to_project.shape[0] == 0:
+            return np_sample
+
         ( nearest_points, __ , __) = tri_mesh_sampled.nearest.on_surface( np_to_project )
         
         np_new_sample = np.empty( (len(np_sample) + len(nearest_points) ,3) )
