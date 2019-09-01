@@ -58,6 +58,8 @@ if __name__ == '__main__':
         end = time.time()  # timing execution
         execution_time = end - start
 
+        print("time: ", execution_time)
+
         tri_mesh_ibs = ibs_calculator.get_trimesh()
         tri_mesh_ibs_segmented = util.slide_mesh_by_sphere( tri_mesh_ibs, np_pivot, radio )
 
@@ -121,6 +123,26 @@ if __name__ == '__main__':
     visualizer2 = trimesh.Scene([
                                 tri_mesh_obj_sampled_points,
                                 tri_mesh_env_sampled_points,
+                                tri_mesh_obj,
+                                tri_mesh_env_segmented,
+                                tri_mesh_ibs_segmented
+                                ])
+    # display the environment with callback
+    visualizer2.show()
+
+    # VISUALIZATION REAL SOURCED POINTS
+    used_points = np.unique(np.asarray(ibs_calculator.ridge_points))
+    tri_mesh_ibs_source_points = trimesh.points.PointCloud( ibs_calculator.points[ used_points ])
+    
+
+    tri_mesh_ibs_source_points.colors = [0, 0, 255, 255]
+    
+    tri_mesh_obj.visual.face_colors = [0, 255, 0, 70]
+    tri_mesh_env_segmented.visual.face_colors = [255, 0, 0, 100]
+    tri_mesh_ibs_segmented.visual.face_colors = [0, 0, 255, 40]
+
+    visualizer2 = trimesh.Scene([
+                                tri_mesh_ibs_source_points,
                                 tri_mesh_obj,
                                 tri_mesh_env_segmented,
                                 tri_mesh_ibs_segmented

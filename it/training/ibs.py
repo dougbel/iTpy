@@ -44,12 +44,16 @@ class IBS:
         self.vertices = voro.vertices[ valid_index ]
 
         #generate ridge vertices lists
-        self.ridge_vertices = []
-        for ridge in voro.ridge_vertices:
+        self.ridge_vertices = []        #Indices of the Voronoi vertices forming each Voronoi ridge
+        self.ridge_points = []          #Indices of the points between which each Voronoi ridge lie
+        for i in range( len(voro.ridge_vertices) ):
+            ridge = voro.ridge_vertices[i]
+            ridge_points = voro.ridge_points[i] 
             #only process ridges in which all vertices are defined in ridges defined by Voronoi 
             if all(idx_vertice in idx_ibs_vertices for idx_vertice in ridge):
                 mapped_idx_ridge = [ ( idx_ibs_vertices.index(idx_vertice) if idx_vertice != -1 else -1 ) for idx_vertice  in ridge]
                 self.ridge_vertices.append( mapped_idx_ridge)
+                self.ridge_points.append(ridge_points)
 
 
     def get_trimesh(self):
