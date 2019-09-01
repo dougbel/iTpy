@@ -124,11 +124,11 @@ class IBSMesh( IBS ):
                     contact_points_obj.append( data[i].point ) 
 
             if( len( contact_points_env ) > 0 ):
-                np_contact_points_env = np.asarray ( contact_points_env )
+                np_contact_points_env = np.unique( np.asarray ( contact_points_env ), axis=0)
                 np_cloud_env = np.concatenate((np_cloud_env, np_contact_points_env ))
 
             if( len( contact_points_obj ) > 0 ):
-                np_contact_points_obj = np.asarray ( contact_points_obj ).reshape( -1, 3 )
+                np_contact_points_obj = np.unique( np.asarray ( contact_points_obj ), axis=0)
                 np_cloud_obj = np.concatenate((np_cloud_obj, np_contact_points_obj ))
             
             if( len( contact_points_env ) > 0 ):
