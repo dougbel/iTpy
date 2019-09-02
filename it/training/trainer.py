@@ -1,5 +1,6 @@
 import math
 from enum import Enum
+from  collections import Counter
 import numpy as np
 
 import trimesh
@@ -18,17 +19,11 @@ class MeshSamplingMethod(Enum):
 class Trainer:
     SAMPLE_SIZE = 512
 
-    def __init__(self, tri_mesh_ibs, tri_mesh_env, sampling_method = MeshSamplingMethod.ON_MESH_BY_POISSON ):
-
-        self.__getIBSCloud( tri_mesh_ibs,tri_mesh_env,  sampling_method )
-
+    def __init__(self, tri_mesh_ibs, tri_mesh_env, sampling_method = MeshSamplingMethod.ON_MESH_BY_POISSON, ibs_samples_pow=25, ibs_weight_pow=20 ):
+        
         self.__get_env_normal( tri_mesh_env )
 
-        self.pv_points = self.np_cloud_ibs[ self.idx_ibs_cloud_sample ]
-
-        self.pv_vectors = self.closest_points[ self.idx_ibs_cloud_sample ] - self.pv_points
-
-        self.pv_norms = self.norms[ self.idx_ibs_cloud_sample ]
+        self.__getIBSCloud( tri_mesh_ibs,tri_mesh_env,  sampling_method, ibs_samples_pow, ibs_weight_pow )
 
         self.pv_max_norm = self.pv_norms.max()
         
@@ -37,32 +32,50 @@ class Trainer:
         self.pv_mapped_norms = np.asarray( [ self.__map_norm(norm, self.pv_max_norm, self.pv_min_norm ) for norm in self.pv_norms ] )
 
 
-    def __getIBSCloud(self, tri_mesh_ibs, tri_mesh_env, sampling_method ):
+    def __getIBSCloud(self, tri_mesh_ibs, tri_mesh_env, sampling_method, ibs_samples_pow, ibs_weight_pow ):
         
         if sampling_method == MeshSamplingMethod.ON_MESH_WEIGHTED:
-            self.np_cloud_ibs = util.sample_points_poisson_disk(tri_mesh_ibs, self.SAMPLE_SIZE*20)
-            ( self.closest_points, self.norms , __) = tri_mesh_env.nearest.on_surface( self.np_cloud_ibs )
-            #TODO tranform random sampling to a random sampling without repetition
+            
+            n_ibs_samples = self.SAMPLE_SIZE*ibs_samples_pow
+            self.np_cloud_ibs = util.sample_points_poisson_disk(tri_mesh_ibs, n_ibs_samples)
+            lclosest = []
+            lnorms = []
+            for iterator in range(ibs_samples_pow):
+                idx_from = self.SAMPLE_SIZE*iterator
+                idx_to = idx_from + self.SAMPLE_SIZE
+                ( closest_points, norms , __) = tri_mesh_env.nearest.on_surface( self.np_cloud_ibs[ idx_from : idx_to ] )
+                lclosest.extend( closest_points )
+                lnorms.extend( norms )
+            self.closest_points = np.asarray( lclosest )
+            self.norms = np.asarray( lnorms )
+
             max_norm = self.norms.max()
             min_norm = self.norms.min()
             mapped_norms =  [ self.__map_norm(norm, max_norm, min_norm) for norm in self.norms ]
             sum_mapped_norms = sum(mapped_norms)
             probabilities = [float(mapped)/sum_mapped_norms for mapped in mapped_norms]
-            self.idx_ibs_cloud_sample = np.random.choice(self.np_cloud_ibs.shape[0], self.SAMPLE_SIZE, replace =False, p=probabilities)
-
+            self.chosen_ibs_points = np.random.choice(self.np_cloud_ibs.shape[0], n_ibs_samples*ibs_weight_pow, p=probabilities)
+            votes = Counter(self.chosen_ibs_points).most_common(self.SAMPLE_SIZE)
+            
+            self.idx_ibs_cloud_sample = [tuple[0] for tuple in votes]
+            self.pv_points = self.np_cloud_ibs[ self.idx_ibs_cloud_sample ]
+            self.pv_vectors = self.closest_points[ self.idx_ibs_cloud_sample ] - self.pv_points
+            self.pv_norms = self.norms[ self.idx_ibs_cloud_sample ]
 
         else:
 
             if sampling_method == MeshSamplingMethod.ON_MESH_VERTICES:
                 self.np_cloud_ibs = np.asarray( tri_mesh_ibs.vertices )
-                ( self.closest_points, self.norms , __) = tri_mesh_env.nearest.on_surface( self.np_cloud_ibs )
 
             elif sampling_method == MeshSamplingMethod.ON_MESH_BY_POISSON:
                 self.np_cloud_ibs = util.sample_points_poisson_disk(tri_mesh_ibs, self.SAMPLE_SIZE*5)
-                ( self.closest_points, self.norms , __) = tri_mesh_env.nearest.on_surface( self.np_cloud_ibs )
             
             self.idx_ibs_cloud_sample = np.random.randint( 0, self.np_cloud_ibs.shape[0], self.SAMPLE_SIZE )
-       
+            self.pv_points = self.np_cloud_ibs[ self.idx_ibs_cloud_sample ]
+            ( closest_points_in_env, self.pv_norms , __) = tri_mesh_env.nearest.on_surface( self.pv_points )
+            self.pv_vectors = closest_points_in_env - self.pv_points
+
+            
 
 
     def __get_env_normal( self, tri_mesh_env ):

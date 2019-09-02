@@ -29,21 +29,25 @@ def visualize ( trainer, tri_mesh_env, tri_mesh_obj ):
 
 
 if __name__ == '__main__':
+    #RIDE A MOTORCYCLE
+    tri_mesh_env = trimesh.load_mesh("./data/interactions/motorbike_rider/motorbike.ply")
+    tri_mesh_obj = trimesh.load_mesh("./data/interactions/motorbike_rider/biker.ply")
+    tri_mesh_ibs_segmented = trimesh.load_mesh("./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_3000_resamplings_2.ply")
 
-    tri_mesh_ibs_segmented = trimesh.load_mesh('./data/pv/ibs_mesh_segmented.ply')
-    
+    #PLACE BOWL TABLE
+    '''tri_mesh_ibs_segmented = trimesh.load_mesh('./data/pv/ibs_mesh_segmented.ply')
     tri_mesh_env = trimesh.load_mesh('./data/table.ply')
+    tri_mesh_obj = trimesh.load_mesh('./data/bowl.ply')'''
 
     trainer_poisson = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_BY_POISSON )
     
     trainer_vertices = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_VERTICES )
 
-    trainer_weighted = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_WEIGHTED )
+    trainer_weighted = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_WEIGHTED, 10, 5 )
 
 
 
-    #VISUALIZATION
-    tri_mesh_obj = trimesh.load_mesh('./data/bowl.ply')
+    #VISUALIZATION    
 
     visualize ( trainer_poisson, tri_mesh_env, tri_mesh_obj )
 
