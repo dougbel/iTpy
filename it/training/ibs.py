@@ -18,21 +18,24 @@ class IBS:
         self.points[:self.size_cloud_env] = np_cloud_env
         self.points[self.size_cloud_env:] = np_cloud_obj
 
-        voro = Voronoi( self.points )
+        self.voro = Voronoi( self.points )
 
+        self.generate_ibs_structure()
+
+    def generate_ibs_structure(self):
         env_idx_vertices = []
         obj_idx_vertices = []
 
         #check the region formed around point in the environment
         #point_region : Index of the Voronoi region for each input point
-        for env_idx_region in voro.point_region[ :self.size_cloud_env ] :
+        for env_idx_region in self.voro.point_region[ :self.size_cloud_env ] :
             #voronoi region of environment point
             #regions: Indices of the Voronoi vertices forming each Voronoi region
-            env_idx_vertices +=  voro.regions[ env_idx_region ]
+            env_idx_vertices +=  self.voro.regions[ env_idx_region ]
 
-        for obj_idx_region in voro.point_region[ self.size_cloud_env: ] :
+        for obj_idx_region in self.voro.point_region[ self.size_cloud_env: ] :
             #voronoi region of object point
-            obj_idx_vertices += voro.regions[ obj_idx_region ] 
+            obj_idx_vertices += self.voro.regions[ obj_idx_region ] 
 
         env_idx_vertices = list( set( env_idx_vertices ) )
         obj_idx_vertices = list( set( obj_idx_vertices ) )
@@ -41,14 +44,14 @@ class IBS:
 
         #avoid index "-1" for vertices extraction
         valid_index = [idx for idx in idx_ibs_vertices if  idx != -1]
-        self.vertices = voro.vertices[ valid_index ]
+        self.vertices = self.voro.vertices[ valid_index ]
 
         #generate ridge vertices lists
         self.ridge_vertices = []        #Indices of the Voronoi vertices forming each Voronoi ridge
         self.ridge_points = []          #Indices of the points between which each Voronoi ridge lie
-        for i in range( len(voro.ridge_vertices) ):
-            ridge = voro.ridge_vertices[i]
-            ridge_points = voro.ridge_points[i] 
+        for i in range( len(self.voro.ridge_vertices) ):
+            ridge = self.voro.ridge_vertices[i]
+            ridge_points = self.voro.ridge_points[i] 
             #only process ridges in which all vertices are defined in ridges defined by Voronoi 
             if all(idx_vertice in idx_ibs_vertices for idx_vertice in ridge):
                 mapped_idx_ridge = [ ( idx_ibs_vertices.index(idx_vertice) if idx_vertice != -1 else -1 ) for idx_vertice  in ridge]

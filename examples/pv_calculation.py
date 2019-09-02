@@ -8,7 +8,7 @@ from  it.training.trainer import MeshSamplingMethod as msm
 import it.util as util
 
 def visualize ( trainer, tri_mesh_env, tri_mesh_obj ):
-    tri_cloud_ibs = trimesh.points.PointCloud( trainer.np_cloud_ibs, color=[255,0,0,150] )
+    tri_cloud_ibs = trimesh.points.PointCloud( trainer.np_cloud_ibs, color=[255,0,0,100] )
     pv_origin     = trimesh.points.PointCloud( trainer.pv_points, color=[0,0,255,250] )
 
     tri_mesh_env.visual.face_colors = [100, 100, 100, 100]
@@ -38,6 +38,8 @@ if __name__ == '__main__':
     
     trainer_vertices = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_VERTICES )
 
+    trainer_weighted = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_WEIGHTED )
+
 
 
     #VISUALIZATION
@@ -46,3 +48,5 @@ if __name__ == '__main__':
     visualize ( trainer_poisson, tri_mesh_env, tri_mesh_obj )
 
     visualize ( trainer_vertices, tri_mesh_env, tri_mesh_obj )
+
+    visualize ( trainer_weighted, tri_mesh_env, tri_mesh_obj )
