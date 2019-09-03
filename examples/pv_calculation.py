@@ -7,6 +7,12 @@ from  it.training.trainer import Trainer
 from  it.training.trainer import MeshSamplingMethod as msm
 import it.util as util
 
+
+def get_camera(scene):
+  np.set_printoptions(suppress=True)
+  print(scene.camera_transform)
+
+
 def visualize ( trainer, tri_mesh_env, tri_mesh_obj ):
     tri_cloud_ibs = trimesh.points.PointCloud( trainer.np_cloud_ibs, color=[255,0,0,100] )
     pv_origin     = trimesh.points.PointCloud( trainer.pv_points, color=[0,0,255,250] )
@@ -25,7 +31,7 @@ def visualize ( trainer, tri_mesh_env, tri_mesh_obj ):
                             tri_mesh_env,
                             tri_mesh_obj
                             ])
-    scene.show()
+    scene.show(callback= get_camera)
 
 
 if __name__ == '__main__':
