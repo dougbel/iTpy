@@ -12,13 +12,16 @@ from it.training.ibs import IBSMesh
 
 if __name__ == '__main__':
 
-    env_file_mesh = "./data/interactions/motorbike_rider/motorbike.ply"
+
+    env_file_mesh = "./data/table.ply"
+    #env_file_mesh = "./data/interactions/motorbike_rider/motorbike.ply"
     #env_file_mesh = "./data/interactions/hanging-rack_umbrella/hanging-rack.ply"
-    obj_file_mesh = "./data/interactions/motorbike_rider/biker.ply"
+    obj_file_mesh = "./data/bowl.ply"
+    #obj_file_mesh = "./data/interactions/motorbike_rider/biker.ply"
     #obj_file_mesh = "./data/interactions/hanging-rack_umbrella/umbrella.ply"
     
-    env_name = "motorbike"
-    obj_name = "biker"
+    env_name = "table"
+    obj_name = "bowl"
 
     output_dir = './output/ibs_generation_test_collision/'
     if not os.path.exists(output_dir):
@@ -44,7 +47,7 @@ if __name__ == '__main__':
     improve_by_collission = True
     in_collision = True
     resamplings = 2
-    original_sample_size = sampled_points = 600
+    original_sample_size = sampled_points = 3000
 
     data_frame = pd.DataFrame(columns=['obj_sample', 'env_sample', 'resamplings', 'improved_by_collision',
                                        'obj_resampling', 'env_resampling', 'exec_time', 'in_collision', 'collision_points'])

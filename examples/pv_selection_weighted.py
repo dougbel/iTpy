@@ -18,31 +18,33 @@ def get_camera(scene):
 
 
 if __name__ == '__main__':
-    #RIDE A MOTORCYCLE
     
-  
-
-    output_dir = './output/pv_selection_weighted/'
-
-    if not os.path.exists( output_dir ):
-            os.makedirs( output_dir )
 
     data_frame = pd.DataFrame(columns=['obj', 'env', 'rate_samples_in_ibs', 'rate_random_samples',
                                        'ibs_sampled_points', 'random_num_generated', 'exec_time'])
 
-    to_test = pd.DataFrame([{
-            'env': "motorbike", 
-            'obj': "rider", 
-            'tri_mesh_env': "./data/interactions/motorbike_rider/motorbike.ply", 
-            'tri_mesh_obj': "./data/interactions/motorbike_rider/biker.ply", 
-            'tri_mesh_ibs_segmented': "./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_3000_resamplings_2.ply"
+    to_test = pd.DataFrame([
+            {
+            'env': "hanging-rack", 
+            'obj': "umbrella", 
+            'tri_mesh_env': "./data/interactions/hanging-rack_umbrella/hanging-rack.ply", 
+            'tri_mesh_obj': "./data/interactions/hanging-rack_umbrella/umbrella.ply", 
+            'tri_mesh_ibs_segmented': "./data/interactions/hanging-rack_umbrella/ibs_hanging-rack_umbrella_sampled_3000_resamplings_2.ply"
             },
             {'env': "table", 
             'obj': "bowl", 
             'tri_mesh_env': './data/table.ply', 
             'tri_mesh_obj': './data/bowl.ply', 
             'tri_mesh_ibs_segmented': './data/pv/ibs_mesh_segmented.ply'
-            }])
+            },
+            {
+            'env': "motorbike", 
+            'obj': "rider", 
+            'tri_mesh_env': "./data/interactions/motorbike_rider/motorbike.ply", 
+            'tri_mesh_obj': "./data/interactions/motorbike_rider/biker.ply", 
+            'tri_mesh_ibs_segmented': "./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_3000_resamplings_2.ply"
+            }
+            ])
 
 
     camera_transformations =[
@@ -78,15 +80,17 @@ if __name__ == '__main__':
                             ]
     
 
-    for index_label, row_series in to_test.iterrows():
-        env = to_test.at[index_label,'env']
-        obj = to_test.at[index_label,'obj']
-        tri_mesh_env = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_env'] )
-        tri_mesh_obj = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_obj'] )
-        tri_mesh_ibs_segmented = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_ibs_segmented'] )
+
+    for rate_s in range(2,40,2):
+
+        for index_label, row_series in to_test.iterrows():
+            env = to_test.at[index_label,'env']
+            obj = to_test.at[index_label,'obj']
+            tri_mesh_env = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_env'] )
+            tri_mesh_obj = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_obj'] )
+            tri_mesh_ibs_segmented = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_ibs_segmented'] )
 
 
-        for rate_s in range(2,40,2):
             for rate_r in range(2,40,2):
 
                 rate_samples_in_ibs = rate_s
@@ -112,24 +116,28 @@ if __name__ == '__main__':
                 provenance_vectors = trimesh.load_path( pv_3d_path )
                 scene = trimesh.Scene( [ provenance_vectors, pv_origin, tri_cloud_ibs, tri_mesh_env, tri_mesh_obj ])
                 
+                output_dir = './output/pv_selection_weighted/'+env+'_'+obj+'/'
+                if not os.path.exists( output_dir ):
+                        os.makedirs( output_dir )
+
                 for cam in range(len(camera_transformations)):
                     scene.camera_transform = camera_transformations[cam]
 
                     png = scene.save_image()
-                    with open(output_dir+"weighted_"+env+"_"+obj+"_ibssamples_"+str(ibs_sampled_points)+
-                                        "_randomchoiced_"+str(random_num_generated)+"_"+str(cam)+".png", 'wb') as f:
+                    with open(output_dir+"weighted_"+env+"_"+obj+"_ibsrates_"+str(rate_s)+"_ibssamples_"+str(ibs_sampled_points)+
+                                        "_randnumrate_"+str(rate_r)+"_randomnumgen_"+str(random_num_generated)+"_"+str(cam)+".png", 'wb') as f:
                         f.write(png)
                         f.close()
 
 
                 num_bins = trainer_weighted.SAMPLE_SIZE*rate_samples_in_ibs
                 n, bins, patches = plt.hist(trainer_weighted.chosen_ibs_points, num_bins, facecolor='gray', alpha=0.5)
-                plt.savefig(output_dir+"weighted_"+env+"_"+obj+"ibssamples_"+str(ibs_sampled_points)+
-                                    "_randomchoiced_"+str(random_num_generated)+"_histogram.png")
+                plt.savefig(output_dir+"weighted_"+env+"_"+obj+"_ibsrates_"+str(rate_s)+"_ibssamples_"+str(ibs_sampled_points)+
+                                    "_randnumrate_"+str(rate_r)+"_randomnumgen_"+str(random_num_generated)+"_histogram.png")
                 
-    timestamp = int(round(time.time() * 1000))
-    filename = "%sweighted_%s_output_info.csv" % ( output_dir,timestamp )
-    data_frame.to_csv(filename)
+                timestamp = int(round(time.time() * 1000))
+                filename = "%s../weighted_%s_output_info.csv" % ( output_dir,timestamp )
+                data_frame.to_csv(filename)
 
     
     

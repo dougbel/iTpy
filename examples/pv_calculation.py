@@ -35,15 +35,19 @@ def visualize ( trainer, tri_mesh_env, tri_mesh_obj ):
 
 
 if __name__ == '__main__':
-    #RIDE A MOTORCYCLE
-    tri_mesh_env = trimesh.load_mesh("./data/interactions/motorbike_rider/motorbike.ply")
-    tri_mesh_obj = trimesh.load_mesh("./data/interactions/motorbike_rider/biker.ply")
-    tri_mesh_ibs_segmented = trimesh.load_mesh("./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_3000_resamplings_2.ply")
 
     #PLACE BOWL TABLE
     '''tri_mesh_ibs_segmented = trimesh.load_mesh('./data/pv/ibs_mesh_segmented.ply')
     tri_mesh_env = trimesh.load_mesh('./data/table.ply')
     tri_mesh_obj = trimesh.load_mesh('./data/bowl.ply')'''
+    #RIDE A MOTORCYCLE
+    #tri_mesh_env = trimesh.load_mesh("./data/interactions/motorbike_rider/motorbike.ply")
+    #tri_mesh_obj = trimesh.load_mesh("./data/interactions/motorbike_rider/biker.ply")
+    #tri_mesh_ibs_segmented = trimesh.load_mesh("./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_3000_resamplings_2.ply")
+    #HANK AN UMBRELLA
+    tri_mesh_env = trimesh.load_mesh("./data/interactions/hanging-rack_umbrella/hanging-rack.ply")
+    tri_mesh_obj = trimesh.load_mesh("./data/interactions/hanging-rack_umbrella/umbrella.ply")
+    tri_mesh_ibs_segmented = trimesh.load_mesh("./data/interactions/hanging-rack_umbrella/ibs_hanging-rack_umbrella_sampled_3000_resamplings_2.ply")
 
     trainer_poisson = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_BY_POISSON )
     
