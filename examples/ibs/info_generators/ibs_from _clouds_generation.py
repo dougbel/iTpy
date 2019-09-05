@@ -13,9 +13,9 @@ from  it.training.ibs import IBS
 
 if __name__ == '__main__':
 
-    tri_mesh_obj = trimesh.load_mesh("./data/bowl.ply")
+    tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
 
-    tri_mesh_env = trimesh.load_mesh('./data/table_segmented.ply')
+    tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table_segmented.ply')
 
     samples = []
     timing  = []

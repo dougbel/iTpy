@@ -13,9 +13,9 @@ if __name__ == '__main__':
 
     tri_mesh_ibs = trimesh.load_mesh('./data/pv/ibs_mesh.ply')
 
-    tri_mesh_env = trimesh.load_mesh('./data/table.ply')
+    tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
 
-    tri_mesh_obj = trimesh.load_mesh('./data/bowl.ply')
+    tri_mesh_obj = trimesh.load_mesh('./data/interactions/table_bowl/bowl.ply')
     
     trainer = Trainer( tri_mesh_ibs_segmented, tri_mesh_env )
 

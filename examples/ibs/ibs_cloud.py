@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
 
     ####VISUALIZATION
-    mesh_obj_o3d = o3d.io.read_triangle_mesh("./data/bowl.ply")
+    mesh_obj_o3d = o3d.io.read_triangle_mesh("./data/interactions/table_bowl/bowl.ply")
     obj_min_bound = mesh_obj_o3d.get_min_bound()
     obj_max_bound = mesh_obj_o3d.get_max_bound()
     
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     print (end - start , " seconds on IBS calculation (20,000 points)" )  ## timing execution
     
     ####VISUALIZATION
-    mesh_obj_o3d = o3d.io.read_triangle_mesh("./data/bowl.ply")
+    mesh_obj_o3d = o3d.io.read_triangle_mesh("./data/interactions/table_bowl/bowl.ply")
     obj_min_bound = mesh_obj_o3d.get_min_bound()
     obj_max_bound = mesh_obj_o3d.get_max_bound()
     

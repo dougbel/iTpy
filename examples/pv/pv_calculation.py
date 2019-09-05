@@ -38,8 +38,8 @@ if __name__ == '__main__':
 
     #PLACE BOWL TABLE
     '''tri_mesh_ibs_segmented = trimesh.load_mesh('./data/pv/ibs_mesh_segmented.ply')
-    tri_mesh_env = trimesh.load_mesh('./data/table.ply')
-    tri_mesh_obj = trimesh.load_mesh('./data/bowl.ply')'''
+    tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
+    tri_mesh_obj = trimesh.load_mesh('./data/interactions/table_bowl/bowl.ply')'''
     #RIDE A MOTORCYCLE
     #tri_mesh_env = trimesh.load_mesh("./data/interactions/motorbike_rider/motorbike.ply")
     #tri_mesh_obj = trimesh.load_mesh("./data/interactions/motorbike_rider/biker.ply")

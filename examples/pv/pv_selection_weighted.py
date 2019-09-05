@@ -33,8 +33,8 @@ if __name__ == '__main__':
             },
             {'env': "table", 
             'obj': "bowl", 
-            'tri_mesh_env': './data/table.ply', 
-            'tri_mesh_obj': './data/bowl.ply', 
+            'tri_mesh_env': './data/interactions/table_bowl/table.ply', 
+            'tri_mesh_obj': './data/interactions/table_bowl/bowl.ply', 
             'tri_mesh_ibs_segmented': './data/pv/ibs_mesh_segmented.ply'
             },
             {

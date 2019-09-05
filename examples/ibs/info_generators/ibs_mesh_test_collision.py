@@ -12,18 +12,24 @@ from it.training.ibs import IBSMesh
 
 if __name__ == '__main__':
 
+ 
 
-    env_file_mesh = "./data/table.ply"
+    #env_file_mesh = "./data/interactions/table_bowl/table.ply"
+    #obj_file_mesh = "./data/interactions/table_bowl/bowl.ply"
+    #env_name = "table"
+    #obj_name = "bowl"
+
+    env_file_mesh = "./data/interactions/hanging-rack_umbrella/hanging-rack.ply"
+    obj_file_mesh = "./data/interactions/hanging-rack_umbrella/umbrella.ply"
+    env_name = "hanging-rack"
+    obj_name = "umbrella"   
+
     #env_file_mesh = "./data/interactions/motorbike_rider/motorbike.ply"
-    #env_file_mesh = "./data/interactions/hanging-rack_umbrella/hanging-rack.ply"
-    obj_file_mesh = "./data/bowl.ply"
     #obj_file_mesh = "./data/interactions/motorbike_rider/biker.ply"
-    #obj_file_mesh = "./data/interactions/hanging-rack_umbrella/umbrella.ply"
-    
-    env_name = "table"
-    obj_name = "bowl"
+    #env_name = "motorbike"
+    #obj_name = "biker"
 
-    output_dir = './output/ibs_generation_test_collision/'
+    output_dir = './output/ibs_generation_test_collision/'+env_name+'_'+obj_name+'/'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 

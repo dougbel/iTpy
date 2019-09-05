@@ -17,8 +17,8 @@ if __name__ == '__main__':
     env = "table"
     obj = "bowl"
 
-    tri_mesh_obj = trimesh.load_mesh("./data/bowl.ply")
-    tri_mesh_env = trimesh.load_mesh('./data/table.ply')
+    tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
+    tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
     
     obj_min_bound = np.asarray( tri_mesh_obj.vertices ).min(axis=0)
     obj_max_bound = np.asarray( tri_mesh_obj.vertices ).max(axis=0)

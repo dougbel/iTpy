@@ -10,12 +10,12 @@ from  it.training.ibs import IBSMesh
 
 if __name__ == '__main__':
 
-    tri_mesh_obj = trimesh.load_mesh("./data/bowl.ply")
+    tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
     
     obj_min_bound = np.asarray( tri_mesh_obj.vertices ).min(axis=0)
     obj_max_bound = np.asarray( tri_mesh_obj.vertices ).max(axis=0)
     
-    tri_mesh_env = trimesh.load_mesh('./data/table.ply')
+    tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
 
 
     extension = np.linalg.norm(obj_max_bound-obj_min_bound)

@@ -12,9 +12,9 @@ from it.training.agglomerator import Agglomerator
 if __name__ == '__main__':
 
     obj_name = "bowl"
-    obj_mesh_file = "./data/bowl.ply"
+    obj_mesh_file = "./data/interactions/table_bowl/bowl.ply"
     env_name = "table"
-    env_mesh_file = "./data/table.ply"
+    env_mesh_file = "./data/interactions/table_bowl/table.ply"
     affordance_name = "Place"
 
 
