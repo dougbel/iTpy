@@ -135,6 +135,8 @@ if __name__ == '__main__':
                 plt.savefig(output_dir+"weighted_"+env+"_"+obj+"_ibsrates_"+str(rate_s)+"_ibssamples_"+str(ibs_sampled_points)+
                                     "_randnumrate_"+str(rate_r)+"_randomnumgen_"+str(random_num_generated)+"_histogram.png")
                 
+                plt.clf()
+
                 timestamp = int(round(time.time() * 1000))
                 filename = "%s../weighted_%s_output_info.csv" % ( output_dir,timestamp )
                 data_frame.to_csv(filename)
