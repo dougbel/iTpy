@@ -8,3 +8,5 @@ it/training/__pycache__/
 output/
 
 it/testing/__pycache__/
+
+\.idea/

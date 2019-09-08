@@ -1,3 +1,4 @@
+import sys
 import math
 from enum import Enum
 from  collections import Counter
@@ -22,7 +23,9 @@ class Sampler(ABC):
     pv_points = np.array([])
     pv_vectors = np.array([])
     pv_norms = np.array([])
-
+    pv_max_norm = sys.float_info.min
+    pv_min_norm = sys.float_info.max
+    pv_mapped_norms = np.array([])
 
     def __init__(self, tri_mesh_ibs, tri_mesh_env ):
         super().__init__()
@@ -34,12 +37,18 @@ class Sampler(ABC):
 
         self.get_sample()
 
+        self.set_pv_min_max_mapped_norms()
+
+        #TODO order by mapped norm
+
+
+    def set_pv_min_max_mapped_norms(self):
+        
         self.pv_max_norm = self.pv_norms.max()
         self.pv_min_norm = self.pv_norms.min()
         
         self.pv_mapped_norms = np.asarray( [ self.map_norm(norm, self.pv_max_norm, self.pv_min_norm ) for norm in self.pv_norms ] )
 
-        #TODO order by mapped norm
 
     def map_norm(self, norm, max, min):
         return ( norm - min) * (0- 1) / (max - min) + 1
@@ -55,12 +64,18 @@ class Sampler(ABC):
 
 
 class WeightedSampler(Sampler, ABC):
-    BATCH_SIZE_FOR_CLSST_POINT = 200
+    BATCH_SIZE_FOR_CLSST_POINT = 1000
     
     np_cloud_env = np.array([])
     norms = np.array([])
 
-    def get_samplele(self):
+
+    def __init__(self, tri_mesh_ibs, tri_mesh_env, rate_generated_random_numbers=500  ):
+        self.rate_generated_random_numbers = rate_generated_random_numbers
+        super().__init__(tri_mesh_ibs, tri_mesh_env)
+
+
+    def get_sample(self):
         
         max_norm = self.norms.max()
         min_norm = self.norms.min()
@@ -78,13 +93,10 @@ class WeightedSampler(Sampler, ABC):
         self.pv_vectors = self.np_cloud_env[ self.idx_ibs_cloud_sample ] - self.pv_points
         self.pv_norms = self.norms[ self.idx_ibs_cloud_sample ]
 
-    def reSampleWithOtherrateOfRandomNumbers(self, rate_generated_random_numbers):
+    def choosig_with_other_rate(self, rate_generated_random_numbers):
         self.rate_generated_random_numbers = rate_generated_random_numbers
         self.get_sample()
-        self.pv_max_norm = self.pv_norms.max()
-        self.pv_min_norm = self.pv_norms.min()
-        
-        self.pv_mapped_norms = np.asarray( [ self.map_norm(norm, self.pv_max_norm, self.pv_min_norm ) for norm in self.pv_norms ] )
+        self.set_pv_min_max_mapped_norms()
 
 
 class PoissonDiscRandomSampler(Sampler):
@@ -108,13 +120,9 @@ class PoissonDiscRandomSampler(Sampler):
 
 class PoissonDiscWeightedSampler(WeightedSampler):
 
-    np_cloud_env = np.array([])
-    norms = np.array([])
-
-    def __init__(self, tri_mesh_ibs, tri_mesh_env,  rate_ibs_samples=25, rate_generated_random_numbers=20  ):
+    def __init__(self, tri_mesh_ibs, tri_mesh_env,  rate_ibs_samples=25, rate_generated_random_numbers=500  ):
         self.rate_ibs_samples = rate_ibs_samples
-        self.rate_generated_random_numbers = rate_generated_random_numbers
-        super().__init__(tri_mesh_ibs, tri_mesh_env)
+        super().__init__(tri_mesh_ibs, tri_mesh_env, rate_generated_random_numbers)
 
 
     def get_clouds_to_sample(self):
@@ -135,6 +143,12 @@ class PoissonDiscWeightedSampler(WeightedSampler):
         self.np_cloud_env = np.asarray( lclosest )
         self.norms = np.asarray( lnorms )
 
+        bad_idxs = np.argwhere(np.isnan(lnorms))
+
+        self.np_cloud_env = np.delete(self.np_cloud_env, bad_idxs, 0)
+        self.np_cloud_ibs = np.delete(self.np_cloud_ibs, bad_idxs, 0)
+        self.norms = np.delete(self.norms, bad_idxs, 0 )
+
     
 
 
@@ -153,19 +167,11 @@ class OnVerticesRandomSampler(Sampler):
         self.pv_norms = norms
 
 
-#TODO OnVerticesWeightedSampler(Sampler)
-
-class OnGivenPointCloudWeightedSampler(WeightedSampler):
-
-    def __init__(self, tri_mesh_ibs, tri_mesh_env, np_cloud_env, rate_generated_random_numbers=20  ):
-        self.np_cloud_env = np_cloud_env
-        self.rate_generated_random_numbers = rate_generated_random_numbers
-
-        super().__init__(tri_mesh_ibs, tri_mesh_env)
-
+class OnVerticesWeightedSampler(WeightedSampler):
 
     def get_clouds_to_sample(self):
-        size_input_cloud = self.np_cloud_env.shape[0]
+        self.np_cloud_ibs = np.asarray( self.tri_mesh_ibs.vertices )
+        size_input_cloud = self.np_cloud_ibs.shape[0]
         iterations = math.ceil( size_input_cloud/ self.BATCH_SIZE_FOR_CLSST_POINT )
 
         lclosest = []
@@ -174,15 +180,118 @@ class OnGivenPointCloudWeightedSampler(WeightedSampler):
         for it in range(iterations):
             idx_from = it * self.BATCH_SIZE_FOR_CLSST_POINT
             idx_to = idx_from + self.BATCH_SIZE_FOR_CLSST_POINT
-            ( closest_points, norms , __) = self.tri_mesh_ibs.nearest.on_surface( self.np_cloud_env[ idx_from : idx_to ] )
+            ( closest_points, norms , __) = self.tri_mesh_env.nearest.on_surface( self.np_cloud_ibs[ idx_from : idx_to ] )
             lclosest += list(closest_points)
             lnorms +=  list(norms)
 
-        self.np_cloud_ibs = np.asarray( lclosest )
+        self.np_cloud_env = np.asarray( lclosest )
         self.norms = np.asarray( lnorms )
 
         bad_idxs = np.argwhere(np.isnan(lnorms))
 
         self.np_cloud_env = np.delete(self.np_cloud_env, bad_idxs, 0)
         self.np_cloud_ibs = np.delete(self.np_cloud_ibs, bad_idxs, 0)
+        self.norms = np.delete(self.norms, bad_idxs, 0 )
+
+
+
+class OnGivenPointCloudRandomSampler(Sampler):
+
+    np_input_cloud = np.array([])
+
+    BATCH_SIZE_FOR_CLSST_POINT = 1000
+
+    def __init__(self, tri_mesh_ibs, tri_mesh_env, np_input_cloud):
+        self.np_input_cloud = np_input_cloud
+        super().__init__( tri_mesh_ibs, tri_mesh_env )
+
+    def get_clouds_to_sample(self):
+
+        #With environment points, find the nearest point in the IBS surfaces
+        size_input_cloud = self.np_input_cloud.shape[0]
+        iterations = math.ceil( size_input_cloud/ self.BATCH_SIZE_FOR_CLSST_POINT )
+        lclosest = []
+        lnorms = []
+        for it in range(iterations):
+            idx_from = it * self.BATCH_SIZE_FOR_CLSST_POINT
+            idx_to = idx_from + self.BATCH_SIZE_FOR_CLSST_POINT
+            ( closest_points, norms , __) = self.tri_mesh_ibs.nearest.on_surface( self.np_input_cloud[ idx_from : idx_to ] )
+            lclosest += list(closest_points)
+            lnorms +=  list(norms)
+
+        self.np_cloud_ibs = np.asarray( lclosest )
+        bad_idxs = np.argwhere(np.isnan(lnorms))
+        self.np_cloud_ibs = np.delete(self.np_cloud_ibs, bad_idxs, 0)
+
+        # Calculate all PROVENANCE VECTOR RELATED TO IBS SURFACE SAMPLES
+        size_cloud_ibs =  self.np_cloud_ibs.shape[0]
+        iterations = math.ceil( size_cloud_ibs/ self.BATCH_SIZE_FOR_CLSST_POINT )
+        lclosest = []
+        lnorms = []
+        for it in range(iterations):
+            idx_from = it * self.BATCH_SIZE_FOR_CLSST_POINT
+            idx_to = idx_from + self.BATCH_SIZE_FOR_CLSST_POINT
+            ( closest_points, norms , __) = self.tri_mesh_env.nearest.on_surface( self.np_cloud_ibs[ idx_from : idx_to ] )
+            lclosest += list(closest_points)
+            lnorms +=  list(norms)
+
+        self.np_cloud_env = np.asarray( lclosest )
+        self.norms = np.asarray( lnorms )
+        bad_idxs = np.argwhere(np.isnan(lnorms))
+        self.np_cloud_ibs = np.delete(self.np_cloud_ibs, bad_idxs, 0)
+        self.np_cloud_env = np.delete(self.np_cloud_env, bad_idxs, 0)
+        self.norms = np.delete(self.norms, bad_idxs, 0 )
+
+    def get_sample(self):
+
+        self.idx_ibs_cloud_sample = np.random.randint( 0, self.np_cloud_ibs.shape[0], self.SAMPLE_SIZE )
+
+        self.pv_points = self.np_cloud_ibs[ self.idx_ibs_cloud_sample ]
+        ( closest_points_in_env, norms , __) = self.tri_mesh_env.nearest.on_surface( self.pv_points )
+        self.pv_vectors = closest_points_in_env - self.pv_points
+        self.pv_norms = norms
+
+
+class OnGivenPointCloudWeightedSampler(WeightedSampler):
+
+    def __init__(self, tri_mesh_ibs, tri_mesh_env, np_input_cloud, rate_generated_random_numbers=500  ):
+        self.np_input_cloud = np_input_cloud
+        super().__init__(tri_mesh_ibs, tri_mesh_env, rate_generated_random_numbers)
+
+
+    def get_clouds_to_sample(self):
+        size_input_cloud = self.np_input_cloud.shape[0]
+        iterations = math.ceil( size_input_cloud/ self.BATCH_SIZE_FOR_CLSST_POINT )
+
+        lclosest = []
+        lnorms = []
+
+        for it in range(iterations):
+            idx_from = it * self.BATCH_SIZE_FOR_CLSST_POINT
+            idx_to = idx_from + self.BATCH_SIZE_FOR_CLSST_POINT
+            ( closest_points, norms , __) = self.tri_mesh_ibs.nearest.on_surface( self.np_input_cloud[ idx_from : idx_to ] )
+            lclosest += list(closest_points)
+            lnorms +=  list(norms)
+
+        self.np_cloud_ibs = np.asarray( lclosest )
+        bad_idxs = np.argwhere(np.isnan(lnorms))
+        self.np_cloud_ibs = np.delete(self.np_cloud_ibs, bad_idxs, 0)
+
+        # Calculate all PROVENANCE VECTOR RELATED TO IBS SURFACE SAMPLES
+        size_cloud_ibs =  self.np_cloud_ibs.shape[0]
+        iterations = math.ceil( size_cloud_ibs/ self.BATCH_SIZE_FOR_CLSST_POINT )
+        lclosest = []
+        lnorms = []
+        for it in range(iterations):
+            idx_from = it * self.BATCH_SIZE_FOR_CLSST_POINT
+            idx_to = idx_from + self.BATCH_SIZE_FOR_CLSST_POINT
+            ( closest_points, norms , __) = self.tri_mesh_env.nearest.on_surface( self.np_cloud_ibs[ idx_from : idx_to ] )
+            lclosest += list(closest_points)
+            lnorms +=  list(norms)
+
+        self.np_cloud_env = np.asarray( lclosest )
+        self.norms = np.asarray( lnorms )
+        bad_idxs = np.argwhere(np.isnan(lnorms))
+        self.np_cloud_ibs = np.delete(self.np_cloud_ibs, bad_idxs, 0)
+        self.np_cloud_env = np.delete(self.np_cloud_env, bad_idxs, 0)
         self.norms = np.delete(self.norms, bad_idxs, 0 )

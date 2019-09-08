@@ -14,20 +14,20 @@ if __name__ == '__main__':
 
  
 
-    #env_file_mesh = "./data/interactions/table_bowl/table.ply"
-    #obj_file_mesh = "./data/interactions/table_bowl/bowl.ply"
-    #env_name = "table"
-    #obj_name = "bowl"
+    '''env_file_mesh = "./data/interactions/table_bowl/table.ply"
+    obj_file_mesh = "./data/interactions/table_bowl/bowl.ply"
+    env_name = "table"
+    obj_name = "bowl"'''
 
     env_file_mesh = "./data/interactions/hanging-rack_umbrella/hanging-rack.ply"
     obj_file_mesh = "./data/interactions/hanging-rack_umbrella/umbrella.ply"
     env_name = "hanging-rack"
-    obj_name = "umbrella"   
+    obj_name = "umbrella"
 
-    #env_file_mesh = "./data/interactions/motorbike_rider/motorbike.ply"
-    #obj_file_mesh = "./data/interactions/motorbike_rider/biker.ply"
-    #env_name = "motorbike"
-    #obj_name = "biker"
+    '''env_file_mesh = "./data/interactions/motorbike_rider/motorbike.ply"
+    obj_file_mesh = "./data/interactions/motorbike_rider/biker.ply"
+    env_name = "motorbike"
+    obj_name = "biker"'''
 
     output_dir = './output/ibs_generation_test_collision/'+env_name+'_'+obj_name+'/'
     if not os.path.exists(output_dir):
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     improve_by_collission = True
     in_collision = True
     resamplings = 2
-    original_sample_size = sampled_points = 3000
+    original_sample_size = sampled_points = 600
 
     data_frame = pd.DataFrame(columns=['obj_sample', 'env_sample', 'resamplings', 'improved_by_collision',
                                        'obj_resampling', 'env_resampling', 'exec_time', 'in_collision', 'collision_points'])
