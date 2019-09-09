@@ -29,20 +29,20 @@ if __name__ == '__main__':
             'obj': "umbrella", 
             'tri_mesh_env': "./data/interactions/hanging-rack_umbrella/hanging-rack.ply", 
             'tri_mesh_obj': "./data/interactions/hanging-rack_umbrella/umbrella.ply", 
-            'tri_mesh_ibs_segmented': "./data/interactions/hanging-rack_umbrella/ibs_hanging-rack_umbrella_sampled_3000_resamplings_2.ply"
+            'tri_mesh_ibs_segmented': "./data/interactions/hanging-rack_umbrella/ibs_hanging-rack_umbrella_sampled_600_resamplings_2.ply"
             },
             {'env': "table", 
-            'obj': "bowl", 
+            'obj': "bowl",
             'tri_mesh_env': './data/interactions/table_bowl/table.ply', 
             'tri_mesh_obj': './data/interactions/table_bowl/bowl.ply', 
-            'tri_mesh_ibs_segmented': './data/pv/ibs_mesh_segmented.ply'
+            'tri_mesh_ibs_segmented': './data/interactions/table_bowl/ibs_table_bowl_sampled_600_resamplings_2.ply'
             },
             {
             'env': "motorbike", 
             'obj': "rider", 
             'tri_mesh_env': "./data/interactions/motorbike_rider/motorbike.ply", 
             'tri_mesh_obj': "./data/interactions/motorbike_rider/biker.ply", 
-            'tri_mesh_ibs_segmented': "./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_3000_resamplings_2.ply"
+            'tri_mesh_ibs_segmented': "./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_600_resamplings_2.ply"
             }
             ])
 
