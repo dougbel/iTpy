@@ -57,7 +57,7 @@ if __name__ == '__main__':
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    data_frame = pd.DataFrame(columns=['strategy', 'obj', 'env', 'rate_samples_in_ibs', 'rate_random_samples',
+    data_frame = pd.DataFrame(columns=['strategy', 'obj', 'env','sampling_ibs_strategy','probability_density_function', 'rate_samples_in_ibs', 'rate_random_samples',
                                        'ibs_sampled_points', 'random_num_generated', 'exec_time'])
 
     to_test = pd.DataFrame([
@@ -108,14 +108,18 @@ if __name__ == '__main__':
         sampler_poissondisc_random = PoissonDiscRandomSampler(tri_mesh_ibs_segmented, tri_mesh_env, rate_ibs_samples) 
         end = time.time()
         execution_time = end - start
+
         ibs_sampled_points = rate_ibs_samples * sampler_poissondisc_random.SAMPLE_SIZE
-        random_num_generated = -1
-        data_frame.loc[len(data_frame)] = ["ibs_poisson_sampling-chosen_randomlyuniform", obj, env, rate_ibs_samples, rate_generated_random_numbers,
+        random_num_generated = sampler_poissondisc_random.SAMPLE_SIZE
+        sampling_ibs_strategy = 'poisson disc'
+        probability_density_function = 'uniform'
+
+        data_frame.loc[len(data_frame)] = ["ibs_poisson_sampling-chosen_randomlyuniform", obj, env, sampling_ibs_strategy, probability_density_function, rate_ibs_samples, rate_generated_random_numbers,
                                             ibs_sampled_points, random_num_generated, execution_time]
         print("POISSON DISC SAMPLING ON IBS SURFACE - CHOSEN RANDOMLY")
         #visualize( sampler_poissondisc_random )
         scene = generate_scene(sampler_poissondisc_random)
-        saveOutput(sampler_poissondisc_random, scene, output_dir, env+"_"+obj+"ibs_poisson_sampling-chosen_randomlyuniform" )
+        saveOutput(sampler_poissondisc_random, scene, output_dir, env+"_"+obj+"_ibs_poisson_sampling-chosen_randomlyuniform" )
 
 
 
@@ -128,12 +132,14 @@ if __name__ == '__main__':
         execution_time = end - start
         ibs_sampled_points = rate_ibs_samples * sampler_poissondisc_weighted.SAMPLE_SIZE
         random_num_generated = sampler_poissondisc_weighted.np_cloud_ibs.shape[0] * sampler_poissondisc_weighted.rate_generated_random_numbers
-        data_frame.loc[len(data_frame)] = ["ibs_poisson_sampling-chosen_weights", obj, env, rate_ibs_samples, rate_generated_random_numbers,
+        sampling_ibs_strategy = 'poisson disc'
+        probability_density_function = 'weighted'
+        data_frame.loc[len(data_frame)] = ["ibs_poisson_sampling-chosen_weights", obj, env, sampling_ibs_strategy , probability_density_function, rate_ibs_samples, rate_generated_random_numbers,
                                             ibs_sampled_points, random_num_generated, execution_time]
         print("POISSON DISC SAMPLING ON IBS SURFACE - CHOSEN BY WEIGTHS")
         #visualize( sampler_poissondisc_weighted )
         scene = generate_scene(sampler_poissondisc_weighted)
-        saveOutput(sampler_poissondisc_weighted, scene, output_dir, env+"_"+obj+"ibs_poisson_sampling-chosen_weights" )
+        saveOutput(sampler_poissondisc_weighted, scene, output_dir, env+"_"+obj+"_ibs_poisson_sampling-chosen_weights" )
 
 
 
@@ -143,14 +149,16 @@ if __name__ == '__main__':
         sampler_meshvertices_random =  OnVerticesRandomSampler(tri_mesh_ibs_segmented, tri_mesh_env)
         end = time.time()
         execution_time = end - start
-        ibs_sampled_points = -1
-        random_num_generated = -1
-        data_frame.loc[len(data_frame)] = ["ibs_vertices_sampling-chosen_randomlyuniform", obj, env, rate_ibs_samples, rate_generated_random_numbers,
+        ibs_sampled_points = sampler_meshvertices_random.np_cloud_ibs.shape[0]
+        random_num_generated = sampler_meshvertices_random.SAMPLE_SIZE
+        sampling_ibs_strategy = 'ibs vertices'
+        probability_density_function = 'uniform'
+        data_frame.loc[len(data_frame)] = ["ibs_vertices_sampling-chosen_randomlyuniform", obj, env, sampling_ibs_strategy , probability_density_function, rate_ibs_samples, rate_generated_random_numbers,
                                             ibs_sampled_points, random_num_generated, execution_time]
         print("SAMPLING ON IBS SURFACE VERTICES - CHOSEN RANDOMLY")
         #visualize( sampler_meshvertices_random )
         scene = generate_scene( sampler_meshvertices_random )
-        saveOutput( sampler_meshvertices_random, scene, output_dir, env+"_"+obj+"ibs_vertices_sampling-chosen_randomlyuniform" )
+        saveOutput( sampler_meshvertices_random, scene, output_dir, env+"_"+obj+"_ibs_vertices_sampling-chosen_randomlyuniform" )
 
 
 
@@ -161,14 +169,16 @@ if __name__ == '__main__':
                                                                       rate_generated_random_numbers=rate_generated_random_numbers)
         end = time.time()
         execution_time = end - start
-        ibs_sampled_points = -1
+        ibs_sampled_points = sampler_ibs_vertices_weighted.np_cloud_ibs.shape[0]
         random_num_generated = sampler_ibs_vertices_weighted.np_cloud_ibs.shape[0] * sampler_ibs_vertices_weighted.rate_generated_random_numbers
-        data_frame.loc[len(data_frame)] = ["ibs_vertices_sampling-chosen_weights", obj, env, rate_ibs_samples, rate_generated_random_numbers,
+        sampling_ibs_strategy = 'ibs vertices'
+        probability_density_function = 'weighted'
+        data_frame.loc[len(data_frame)] = ["ibs_vertices_sampling-chosen_weights", obj, env, sampling_ibs_strategy , probability_density_function, rate_ibs_samples, rate_generated_random_numbers,
                                             ibs_sampled_points, random_num_generated, execution_time]
         print("SAMPLING ON IBS SURFACE VERTICES - CHOSEN BY WEIGTHS")  
         #visualize( sampler_ibs_vertices_weighted )
         scene = generate_scene( sampler_ibs_vertices_weighted )
-        saveOutput( sampler_ibs_vertices_weighted, scene, output_dir, env+"_"+obj+"ibs_vertices_sampling-chosen_weights" )
+        saveOutput( sampler_ibs_vertices_weighted, scene, output_dir, env+"_"+obj+"_ibs_vertices_sampling-chosen_weights" )
         
         
 
@@ -180,15 +190,17 @@ if __name__ == '__main__':
                                                                       np_input_cloud = np_cloud_env)
         end = time.time()
         execution_time = end - start
-        ibs_sampled_points = -1
-        random_num_generated = -1
-        data_frame.loc[len(data_frame)] = ["ibs_srcs_sampling-chosen_randomlyuniform", obj, env, rate_ibs_samples, rate_generated_random_numbers,
+        ibs_sampled_points = sampler_ibs_srcs_randomly.np_cloud_env.shape[0]
+        random_num_generated = sampler_ibs_srcs_randomly.SAMPLE_SIZE
+        sampling_ibs_strategy = 'ibs sources'
+        probability_density_function = 'uniform'
+        data_frame.loc[len(data_frame)] = ["ibs_srcs_sampling-chosen_randomlyuniform", obj, env, sampling_ibs_strategy , probability_density_function, rate_ibs_samples, rate_generated_random_numbers,
                                             ibs_sampled_points, random_num_generated, execution_time]
 
         print("SAMPLING ON POINTS THAT GENERATE THE IBS - CHOSEN BY RANDOMLY")  
         #visualize( sampler_ibs_srcs_randomly )
         scene = generate_scene( sampler_ibs_srcs_randomly )
-        saveOutput( sampler_ibs_srcs_randomly, scene, output_dir, env+"_"+obj+"ibs_srcs_sampling-chosen_randomlyuniform" )
+        saveOutput( sampler_ibs_srcs_randomly, scene, output_dir, env+"_"+obj+"_ibs_srcs_sampling-chosen_randomlyuniform" )
 
 
 
@@ -199,15 +211,17 @@ if __name__ == '__main__':
                                                                       rate_generated_random_numbers=rate_generated_random_numbers)
         end = time.time()
         execution_time = end - start
-        ibs_sampled_points = -1
+        ibs_sampled_points = sampler_ibs_srcs_randomly.np_cloud_env.shape[0]
         random_num_generated = sampler_ibs_srcs_weighted.np_cloud_ibs.shape[0] * sampler_ibs_srcs_weighted.rate_generated_random_numbers
-        data_frame.loc[len(data_frame)] = ["ibs_srcs_sampling-chosen_weights", obj, env, rate_ibs_samples, rate_generated_random_numbers,
+        sampling_ibs_strategy = 'ibs sources'
+        probability_density_function = 'weighted'
+        data_frame.loc[len(data_frame)] = ["ibs_srcs_sampling-chosen_weights", obj, env, sampling_ibs_strategy , probability_density_function, rate_ibs_samples, rate_generated_random_numbers,
                                             ibs_sampled_points, random_num_generated, execution_time]
 
         print("SAMPLING ON POINTS THAT GENERATE THE IBS - CHOSEN BY WEIGTHS")  
         #visualize( sampler_ibs_srcs_weighted )
         scene = generate_scene( sampler_ibs_srcs_weighted )
-        saveOutput( sampler_ibs_srcs_weighted, scene, output_dir, env+"_"+obj+"ibs_srcs_sampling-chosen_weights" )
+        saveOutput( sampler_ibs_srcs_weighted, scene, output_dir, env+"_"+obj+"_ibs_srcs_sampling-chosen_weights" )
 
 
 
