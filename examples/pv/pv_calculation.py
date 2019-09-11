@@ -4,7 +4,7 @@ import open3d as o3d
 import trimesh
 
 from  it.training.trainer import Trainer
-from  it.training.trainer import MeshSamplingMethod as msm
+from it.training.sampler import *
 import it.util as util
 
 
@@ -37,23 +37,35 @@ def visualize ( trainer, tri_mesh_env, tri_mesh_obj ):
 if __name__ == '__main__':
 
     #PLACE BOWL TABLE
-    '''tri_mesh_ibs_segmented = trimesh.load_mesh('./data/pv/ibs_mesh_segmented.ply')
-    tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
-    tri_mesh_obj = trimesh.load_mesh('./data/interactions/table_bowl/bowl.ply')'''
+    #tri_mesh_env = trimesh.load_mesh( './data/interactions/table_bowl/table.ply' )
+    #tri_mesh_obj = trimesh.load_mesh( './data/interactions/table_bowl/bowl.ply' )
+    #tri_mesh_ibs_segmented = trimesh.load_mesh( './data/interactions/table_bowl/ibs_table_bowl_sampled_600_resamplings_2.ply' )
+    #np_cloud_env = np.asarray( o3d.io.read_point_cloud( "./data/interactions/table_bowl/env_samplings_ibs_table_bowl_sample_600_resamplings_2.pcd" ) )
     #RIDE A MOTORCYCLE
     #tri_mesh_env = trimesh.load_mesh("./data/interactions/motorbike_rider/motorbike.ply")
     #tri_mesh_obj = trimesh.load_mesh("./data/interactions/motorbike_rider/biker.ply")
-    #tri_mesh_ibs_segmented = trimesh.load_mesh("./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_3000_resamplings_2.ply")
+    #tri_mesh_ibs_segmented = trimesh.load_mesh("./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_600_resamplings_2.ply")
+    #np_cloud_env = np.asarray( o3d.io.read_point_cloud( "./data/interactions/motorbike_rider/env_samplings_ibs_motorbike_biker_sample_600_resamplings_2.pcd" ) )
     #HANK AN UMBRELLA
     tri_mesh_env = trimesh.load_mesh("./data/interactions/hanging-rack_umbrella/hanging-rack.ply")
     tri_mesh_obj = trimesh.load_mesh("./data/interactions/hanging-rack_umbrella/umbrella.ply")
-    tri_mesh_ibs_segmented = trimesh.load_mesh("./data/interactions/hanging-rack_umbrella/ibs_hanging-rack_umbrella_sampled_3000_resamplings_2.ply")
+    tri_mesh_ibs_segmented = trimesh.load_mesh("./data/interactions/hanging-rack_umbrella/ibs_hanging-rack_umbrella_sampled_600_resamplings_2.ply")
+    np_cloud_env = np.asarray( o3d.io.read_point_cloud( "./data/interactions/hanging-rack_umbrella/env_samplings_ibs_hanging-rack_umbrella_sample_600_resamplings_2.pcd" ) )
 
-    trainer_poisson = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_BY_POISSON )
+
+    rate_ibs_samples = 5
+    rate_generated_random_numbers = 500
     
-    trainer_vertices = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_VERTICES )
+    #sampler_poissondisc_random = PoissonDiscRandomSampler( rate_ibs_samples ) 
+    sampler_poissondisc_weighted = PoissonDiscWeightedSampler( rate_ibs_samples=rate_ibs_samples, rate_generated_random_numbers=rate_generated_random_numbers)
+    #sampler_meshvertices_random =  OnVerticesRandomSampler()
+    sampler_ibs_vertices_weighted =  OnVerticesWeightedSampler( rate_generated_random_numbers=rate_generated_random_numbers )
+    #sampler_ibs_srcs_randomly =  OnGivenPointCloudRandomSampler( np_input_cloud = np_cloud_env )
+    sampler_ibs_srcs_weighted =  OnGivenPointCloudWeightedSampler( np_input_cloud = np_cloud_env, rate_generated_random_numbers=rate_generated_random_numbers)
 
-    trainer_weighted = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_WEIGHTED, 10, 5 )
+    trainer_poisson = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, sampler_poissondisc_weighted )    
+    trainer_vertices = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, sampler_ibs_vertices_weighted )
+    trainer_weighted = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, sampler_ibs_srcs_weighted )
 
 
 

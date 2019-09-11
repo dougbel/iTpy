@@ -4,8 +4,8 @@ import trimesh
 
 import it.util as util
 from it.training.ibs import IBSMesh
+from it.training.sampler import *
 from it.training.trainer import Trainer
-from it.training.trainer import MeshSamplingMethod as msm
 from it.training.agglomerator import Agglomerator
 
 
@@ -40,17 +40,25 @@ if __name__ == '__main__':
     ################################
     
     tri_mesh_ibs = ibs_calculator.get_trimesh()
-    tri_mesh_ibs = tri_mesh_ibs.subdivide()
+    #tri_mesh_ibs = tri_mesh_ibs.subdivide()
     
     sphere_ro = np.linalg.norm( obj_max_bound - obj_min_bound )
     sphere_center = np.asarray( obj_max_bound + obj_min_bound ) / 2
     
     tri_mesh_ibs_segmented = util.slide_mesh_by_sphere( tri_mesh_ibs, sphere_center, sphere_ro ) 
 
-    
-    trainer = Trainer( tri_mesh_ibs = tri_mesh_ibs_segmented, 
-                        tri_mesh_env = tri_mesh_env, 
-                        sampling_method = msm.ON_MESH_BY_POISSON )
+    rate_ibs_samples = 5
+    rate_generated_random_numbers = 500
+    np_cloud_env = ibs_calculator.points[: ibs_calculator.size_cloud_env]
+
+    #sampler = PoissonDiscRandomSampler( rate_ibs_samples ) 
+    #sampler = PoissonDiscWeightedSampler( rate_ibs_samples=rate_ibs_samples, rate_generated_random_numbers=rate_generated_random_numbers)
+    #sampler =  OnVerticesRandomSampler()
+    #sampler =  OnVerticesWeightedSampler( rate_generated_random_numbers=rate_generated_random_numbers )
+    #sampler =  OnGivenPointCloudRandomSampler( np_input_cloud = np_cloud_env )
+    sampler =  OnGivenPointCloudWeightedSampler( np_input_cloud = np_cloud_env, rate_generated_random_numbers=rate_generated_random_numbers)
+   
+    trainer = Trainer( tri_mesh_ibs = tri_mesh_ibs_segmented, tri_mesh_env = tri_mesh_env, sampler= sampler )
 
     agg = Agglomerator(trainer)
 

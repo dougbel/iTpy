@@ -9,7 +9,8 @@ import open3d as o3d
 import trimesh
 
 from  it.training.trainer import Trainer
-from  it.training.trainer import MeshSamplingMethod as msm
+from it.training.sampler import PoissonDiscWeightedSampler
+
 import it.util as util
 
 def get_camera(scene):
@@ -29,20 +30,23 @@ if __name__ == '__main__':
             'obj': "umbrella", 
             'tri_mesh_env': "./data/interactions/hanging-rack_umbrella/hanging-rack.ply", 
             'tri_mesh_obj': "./data/interactions/hanging-rack_umbrella/umbrella.ply", 
-            'tri_mesh_ibs_segmented': "./data/interactions/hanging-rack_umbrella/ibs_hanging-rack_umbrella_sampled_600_resamplings_2.ply"
+            'tri_mesh_ibs_segmented': "./data/interactions/hanging-rack_umbrella/ibs_hanging-rack_umbrella_sampled_600_resamplings_2.ply",
+            'o3d_cloud_sources_ibs': "./data/interactions/hanging-rack_umbrella/env_samplings_ibs_hanging-rack_umbrella_sample_600_resamplings_2.pcd"
             },
             {'env': "table", 
             'obj': "bowl",
             'tri_mesh_env': './data/interactions/table_bowl/table.ply', 
             'tri_mesh_obj': './data/interactions/table_bowl/bowl.ply', 
-            'tri_mesh_ibs_segmented': './data/interactions/table_bowl/ibs_table_bowl_sampled_600_resamplings_2.ply'
+            'tri_mesh_ibs_segmented': './data/interactions/table_bowl/ibs_table_bowl_sampled_600_resamplings_2.ply',
+            'o3d_cloud_sources_ibs': "./data/interactions/table_bowl/env_samplings_ibs_table_bowl_sample_600_resamplings_2.pcd"
             },
             {
             'env': "motorbike", 
             'obj': "rider", 
             'tri_mesh_env': "./data/interactions/motorbike_rider/motorbike.ply", 
             'tri_mesh_obj': "./data/interactions/motorbike_rider/biker.ply", 
-            'tri_mesh_ibs_segmented': "./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_600_resamplings_2.ply"
+            'tri_mesh_ibs_segmented': "./data/interactions/motorbike_rider/ibs_motorbike_biker_sampled_600_resamplings_2.ply",
+            'o3d_cloud_sources_ibs': "./data/interactions/motorbike_rider/env_samplings_ibs_motorbike_biker_sample_600_resamplings_2.pcd"
             }
             ])
 
@@ -89,7 +93,8 @@ if __name__ == '__main__':
             tri_mesh_env = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_env'] )
             tri_mesh_obj = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_obj'] )
             tri_mesh_ibs_segmented = trimesh.load_mesh( to_test.at[index_label,'tri_mesh_ibs_segmented'] )
-
+            o3d_cloud_sources_ibs = o3d.io.read_point_cloud( to_test.at[index_label,'o3d_cloud_sources_ibs'] )
+            np_cloud_env = np.asarray(o3d_cloud_sources_ibs.points)
 
             for rate_r in range(2,40,2):
 
@@ -97,7 +102,10 @@ if __name__ == '__main__':
                 rate_random_samples = rate_r
 
                 start = time.time()  # timing execution
-                trainer_weighted = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, msm.ON_MESH_WEIGHTED, rate_samples_in_ibs, rate_random_samples )
+                sampler_poissondisc_weighted = PoissonDiscWeightedSampler( rate_ibs_samples=rate_samples_in_ibs, 
+                                                                           rate_generated_random_numbers=rate_random_samples)
+
+                trainer_weighted = Trainer( tri_mesh_ibs_segmented, tri_mesh_env, sampler_poissondisc_weighted )
                 end = time.time()  # timing execution
                 execution_time = end - start
 

@@ -34,7 +34,7 @@ if __name__ == '__main__':
     start = time.time() ## timing execution
     
     tri_mesh_ibs = ibs_calculator.get_trimesh()
-    tri_mesh_ibs = tri_mesh_ibs.subdivide()
+    #tri_mesh_ibs = tri_mesh_ibs.subdivide()
     
     sphere_ro = np.linalg.norm( obj_max_bound - obj_min_bound )
     sphere_center = np.asarray( obj_max_bound + obj_min_bound ) / 2

@@ -19,35 +19,23 @@ class Sampler(ABC):
 
     idx_ibs_cloud_sample = []
 
-
     pv_points = np.array([])
     pv_vectors = np.array([])
     pv_norms = np.array([])
-    pv_max_norm = sys.float_info.min
-    pv_min_norm = sys.float_info.max
-    pv_mapped_norms = np.array([])
+    
 
-    def __init__(self, tri_mesh_ibs, tri_mesh_env ):
+    def __init__(self ):
         super().__init__()
+
+    def execute(self, tri_mesh_ibs, tri_mesh_env):
 
         self.tri_mesh_ibs = tri_mesh_ibs
         self.tri_mesh_env = tri_mesh_env
 
         self.get_clouds_to_sample()
-
         self.get_sample()
 
-        self.set_pv_min_max_mapped_norms()
-
         #TODO order by mapped norm
-
-
-    def set_pv_min_max_mapped_norms(self):
-        
-        self.pv_max_norm = self.pv_norms.max()
-        self.pv_min_norm = self.pv_norms.min()
-        
-        self.pv_mapped_norms = np.asarray( [ self.map_norm(norm, self.pv_max_norm, self.pv_min_norm ) for norm in self.pv_norms ] )
 
 
     def map_norm(self, norm, max, min):
@@ -70,9 +58,10 @@ class WeightedSampler(Sampler, ABC):
     norms = np.array([])
 
 
-    def __init__(self, tri_mesh_ibs, tri_mesh_env, rate_generated_random_numbers=500  ):
+    def __init__(self, rate_generated_random_numbers=500  ):
         self.rate_generated_random_numbers = rate_generated_random_numbers
-        super().__init__(tri_mesh_ibs, tri_mesh_env)
+        super().__init__()
+
 
 
     def get_sample(self):
@@ -96,14 +85,13 @@ class WeightedSampler(Sampler, ABC):
     def choosig_with_other_rate(self, rate_generated_random_numbers):
         self.rate_generated_random_numbers = rate_generated_random_numbers
         self.get_sample()
-        self.set_pv_min_max_mapped_norms()
 
 
 class PoissonDiscRandomSampler(Sampler):
     rate_ibs_samples = 5 
-    def __init__(self, tri_mesh_ibs, tri_mesh_env,  rate_ibs_samples=5 ):
+    def __init__(self, rate_ibs_samples=5 ):
         self.rate_ibs_samples = rate_ibs_samples
-        super().__init__(tri_mesh_ibs, tri_mesh_env)
+        super().__init__()
     
     def get_clouds_to_sample(self):
         self.np_cloud_ibs = util.sample_points_poisson_disk(self.tri_mesh_ibs, self.SAMPLE_SIZE*self.rate_ibs_samples)
@@ -120,9 +108,9 @@ class PoissonDiscRandomSampler(Sampler):
 
 class PoissonDiscWeightedSampler(WeightedSampler):
 
-    def __init__(self, tri_mesh_ibs, tri_mesh_env,  rate_ibs_samples=25, rate_generated_random_numbers=500  ):
+    def __init__(self, rate_ibs_samples=25, rate_generated_random_numbers=500  ):
         self.rate_ibs_samples = rate_ibs_samples
-        super().__init__(tri_mesh_ibs, tri_mesh_env, rate_generated_random_numbers)
+        super().__init__( rate_generated_random_numbers )
 
 
     def get_clouds_to_sample(self):
@@ -201,9 +189,9 @@ class OnGivenPointCloudRandomSampler(Sampler):
 
     BATCH_SIZE_FOR_CLSST_POINT = 1000
 
-    def __init__(self, tri_mesh_ibs, tri_mesh_env, np_input_cloud):
+    def __init__(self, np_input_cloud):
         self.np_input_cloud = np_input_cloud
-        super().__init__( tri_mesh_ibs, tri_mesh_env )
+        super().__init__( )
 
     def get_clouds_to_sample(self):
 
@@ -254,9 +242,9 @@ class OnGivenPointCloudRandomSampler(Sampler):
 
 class OnGivenPointCloudWeightedSampler(WeightedSampler):
 
-    def __init__(self, tri_mesh_ibs, tri_mesh_env, np_input_cloud, rate_generated_random_numbers=500  ):
+    def __init__(self, np_input_cloud, rate_generated_random_numbers=500  ):
         self.np_input_cloud = np_input_cloud
-        super().__init__(tri_mesh_ibs, tri_mesh_env, rate_generated_random_numbers)
+        super().__init__( rate_generated_random_numbers )
 
 
     def get_clouds_to_sample(self):
