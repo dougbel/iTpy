@@ -39,7 +39,7 @@ def generate_scene(sampler, tri_mesh_obj):
     return compiled_scene
 
 
-def save_output(sampler, scene, output_dir, file_name):
+def save_output(scene, output_dir, file_name):
     camera_transformations = [
         [[1., 0., 0., -0.000145], [0., 1., 0., -0.000213, ], [0., 0., 1., 0.54402789], [0., 0., 0., 1.]],
         [[1., 0., 0., 0.04396537], [0., 1., 0., 0.23108601], [-0., 0., 1., 3.35716683], [0., 0., 0., 1.]],
@@ -85,38 +85,36 @@ if __name__ == '__main__':
         rate_ibs_samples = 5
         rate_generated_random_numbers = 500
 
+        # ##############################################################################################################
         # ####  POISSON DISC SAMPLING ON IBS SURFACE
-
+        # #### UNIFORM
         start = time.time()
         sampler_poissondisc_random = PoissonDiscRandomSampler(rate_ibs_samples)
         sampler_poissondisc_random.execute(tri_mesh_ibs_segmented, tri_mesh_env)
         end = time.time()
         execution_time = end - start
-
-        ibs_sampled_points = rate_ibs_samples * sampler_poissondisc_random.SAMPLE_SIZE
+        ibs_sampled_points = sampler_poissondisc_random.np_cloud_ibs.shape[0]
         random_num_generated = sampler_poissondisc_random.SAMPLE_SIZE
         sampling_ibs_strategy = 'poisson disc'
         probability_density_function = 'uniform'
-
         data_frame.loc[len(data_frame)] = ["ibs_poisson_sampling-chosen_randomlyuniform", obj, env,
                                            sampling_ibs_strategy, probability_density_function, rate_ibs_samples,
                                            rate_generated_random_numbers,
                                            ibs_sampled_points, random_num_generated, execution_time]
         print("POISSON DISC SAMPLING ON IBS SURFACE - CHOSEN RANDOMLY")
-        visualize(sampler_poissondisc_random, tri_mesh_obj)
+        # visualize(sampler_poissondisc_random, tri_mesh_obj)
         scene = generate_scene(sampler_poissondisc_random, tri_mesh_obj)
-        save_output(sampler_poissondisc_random, scene, output_dir,
-                    env + "_" + obj + "_ibs_poisson_sampling-chosen_randomlyuniform")
+        file_name = env + "_" + obj + "_ibs_poisson_sampling-chosen_randomlyuniform"
+        save_output(scene, output_dir, file_name)
 
+        # #### WEIGHTED
         start = time.time()
-        sampler_poissondisc_weighted = PoissonDiscWeightedSampler(rate_ibs_samples,
-                                                                  rate_generated_random_numbers)
+        sampler_poissondisc_weighted = PoissonDiscWeightedSampler(rate_ibs_samples, rate_generated_random_numbers)
         sampler_poissondisc_weighted.execute(tri_mesh_ibs_segmented, tri_mesh_env)
         end = time.time()
         execution_time = end - start
         ibs_sampled_points = sampler_poissondisc_weighted.np_cloud_ibs.shape[0]
         random_num_generated = sampler_poissondisc_weighted.rolls.size
-
         sampling_ibs_strategy = 'poisson disc'
         probability_density_function = 'weighted'
         data_frame.loc[len(data_frame)] = ["ibs_poisson_sampling-chosen_weights", obj, env, sampling_ibs_strategy,
@@ -124,13 +122,14 @@ if __name__ == '__main__':
                                            rate_generated_random_numbers,
                                            ibs_sampled_points, random_num_generated, execution_time]
         print("POISSON DISC SAMPLING ON IBS SURFACE - CHOSEN BY WEIGTHS")
-        visualize(sampler_poissondisc_weighted, tri_mesh_obj)
+        # visualize(sampler_poissondisc_weighted, tri_mesh_obj)
         scene = generate_scene(sampler_poissondisc_weighted, tri_mesh_obj)
-        save_output(sampler_poissondisc_weighted, scene, output_dir,
-                    env + "_" + obj + "_ibs_poisson_sampling-chosen_weights")
+        file_name = env + "_" + obj + "_ibs_poisson_sampling-chosen_weights"
+        save_output(scene, output_dir, file_name)
 
+        # ##############################################################################################################
         # ####  SAMPLING ON IBS VERTICES
-
+        # #### UNIFORM
         start = time.time()
         sampler_meshvertices_random = OnVerticesRandomSampler()
         sampler_meshvertices_random.execute(tri_mesh_ibs_segmented, tri_mesh_env)
@@ -145,20 +144,19 @@ if __name__ == '__main__':
                                            rate_generated_random_numbers,
                                            ibs_sampled_points, random_num_generated, execution_time]
         print("SAMPLING ON IBS SURFACE VERTICES - CHOSEN RANDOMLY")
-        visualize(sampler_meshvertices_random, tri_mesh_obj)
+        # visualize(sampler_meshvertices_random, tri_mesh_obj)
         scene = generate_scene(sampler_meshvertices_random, tri_mesh_obj)
-        save_output(sampler_meshvertices_random, scene, output_dir,
-                    env + "_" + obj + "_ibs_vertices_sampling-chosen_randomlyuniform")
+        file_name = env + "_" + obj + "_ibs_vertices_sampling-chosen_randomlyuniform"
+        save_output(scene, output_dir, file_name)
 
+        # #### WEIGHTED
         start = time.time()
-        sampler_ibs_vertices_weighted = OnVerticesWeightedSampler(
-            rate_generated_random_numbers=rate_generated_random_numbers)
+        sampler_ibs_vertices_weighted = OnVerticesWeightedSampler(rate_generated_random_numbers)
         sampler_ibs_vertices_weighted.execute(tri_mesh_ibs_segmented, tri_mesh_env)
         end = time.time()
         execution_time = end - start
         ibs_sampled_points = sampler_ibs_vertices_weighted.np_cloud_ibs.shape[0]
-        random_num_generated = sampler_ibs_vertices_weighted.np_cloud_ibs.shape[
-                                   0] * sampler_ibs_vertices_weighted.rate_generated_random_numbers
+        random_num_generated = sampler_ibs_vertices_weighted.rolls.size
         sampling_ibs_strategy = 'ibs vertices'
         probability_density_function = 'weighted'
         data_frame.loc[len(data_frame)] = ["ibs_vertices_sampling-chosen_weights", obj, env, sampling_ibs_strategy,
@@ -166,18 +164,20 @@ if __name__ == '__main__':
                                            rate_generated_random_numbers,
                                            ibs_sampled_points, random_num_generated, execution_time]
         print("SAMPLING ON IBS SURFACE VERTICES - CHOSEN BY WEIGTHS")
-        visualize(sampler_ibs_vertices_weighted, tri_mesh_obj)
+        # visualize(sampler_ibs_vertices_weighted, tri_mesh_obj)
         scene = generate_scene(sampler_ibs_vertices_weighted, tri_mesh_obj)
-        save_output(sampler_ibs_vertices_weighted, scene, output_dir,
-                    env + "_" + obj + "_ibs_vertices_sampling-chosen_weights")
+        file_name = env + "_" + obj + "_ibs_vertices_sampling-chosen_weights"
+        save_output(scene, output_dir, file_name)
 
+        # ##############################################################################################################
         # ####  SAMPLING ON POINT THAT GENERATE THE IBS SURFACE
+        # #### UNIFORM
         start = time.time()
-        sampler_ibs_srcs_randomly = OnGivenPointCloudRandomSampler(np_input_cloud=np_cloud_env)
+        sampler_ibs_srcs_randomly = OnGivenPointCloudRandomSampler(np_cloud_env)
         sampler_ibs_srcs_randomly.execute(tri_mesh_ibs_segmented, tri_mesh_env)
         end = time.time()
         execution_time = end - start
-        ibs_sampled_points = sampler_ibs_srcs_randomly.np_cloud_env.shape[0]
+        ibs_sampled_points = sampler_ibs_srcs_randomly.np_cloud_ibs.shape[0]
         random_num_generated = sampler_ibs_srcs_randomly.SAMPLE_SIZE
         sampling_ibs_strategy = 'ibs sources'
         probability_density_function = 'uniform'
@@ -185,33 +185,31 @@ if __name__ == '__main__':
                                            probability_density_function, rate_ibs_samples,
                                            rate_generated_random_numbers,
                                            ibs_sampled_points, random_num_generated, execution_time]
-
         print("SAMPLING ON POINTS THAT GENERATE THE IBS - CHOSEN BY RANDOMLY")
-        visualize(sampler_ibs_srcs_randomly, tri_mesh_obj)
+        # visualize(sampler_ibs_srcs_randomly, tri_mesh_obj)
         scene = generate_scene(sampler_ibs_srcs_randomly, tri_mesh_obj)
-        save_output(sampler_ibs_srcs_randomly, scene, output_dir,
-                    env + "_" + obj + "_ibs_srcs_sampling-chosen_randomlyuniform")
+        file_name = env + "_" + obj + "_ibs_srcs_sampling-chosen_randomlyuniform"
+        save_output(scene, output_dir, file_name)
 
+        # #### WEIGHTED
         start = time.time()
-        sampler_ibs_srcs_weighted = OnGivenPointCloudWeightedSampler(np_cloud_env,
-                                                                     rate_generated_random_numbers)
+        sampler_ibs_srcs_weighted = OnGivenPointCloudWeightedSampler(np_cloud_env, rate_generated_random_numbers)
         sampler_ibs_srcs_weighted.execute(tri_mesh_ibs_segmented, tri_mesh_env)
         end = time.time()
         execution_time = end - start
-        ibs_sampled_points = sampler_ibs_srcs_randomly.np_cloud_env.shape[0]
-        random_num_generated = sampler_ibs_srcs_weighted.np_cloud_ibs.shape[
-                                   0] * sampler_ibs_srcs_weighted.rate_generated_random_numbers
+        ibs_sampled_points = sampler_ibs_srcs_weighted.np_cloud_ibs.shape[0]
+        random_num_generated = sampler_ibs_srcs_weighted.rolls.size
         sampling_ibs_strategy = 'ibs sources'
         probability_density_function = 'weighted'
         data_frame.loc[len(data_frame)] = ["ibs_srcs_sampling-chosen_weights", obj, env, sampling_ibs_strategy,
                                            probability_density_function, rate_ibs_samples,
                                            rate_generated_random_numbers,
                                            ibs_sampled_points, random_num_generated, execution_time]
-
         print("SAMPLING ON POINTS THAT GENERATE THE IBS - CHOSEN BY WEIGTHS")
-        visualize(sampler_ibs_srcs_weighted, tri_mesh_obj)
+        # visualize(sampler_ibs_srcs_weighted, tri_mesh_obj)
         scene = generate_scene(sampler_ibs_srcs_weighted, tri_mesh_obj)
-        save_output(sampler_ibs_srcs_weighted, scene, output_dir, env + "_" + obj + "_ibs_srcs_sampling-chosen_weights")
+        file_name = env + "_" + obj + "_ibs_srcs_sampling-chosen_weights"
+        save_output(scene, output_dir, file_name)
 
     filename = "%soutput_info.csv" % output_dir
     data_frame.to_csv(filename)

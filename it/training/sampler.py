@@ -37,7 +37,6 @@ class Sampler(ABC):
         self.get_clouds_to_sample()
         self.get_sample()
 
-        # TODO order by mapped norm
 
     def map_norm(self, norm, max, min):
         return (norm - min) * (0 - 1) / (max - min) + 1
