@@ -9,21 +9,24 @@ import open3d as o3d
 import it.util as util
 from it.training.ibs import IBSMesh
 
-
 if __name__ == '__main__':
 
-
-    env_file_mesh = "./data/table.ply"
-    #env_file_mesh = "./data/interactions/motorbike_rider/motorbike.ply"
-    #env_file_mesh = "./data/interactions/hanging-rack_umbrella/hanging-rack.ply"
-    obj_file_mesh = "./data/bowl.ply"
-    #obj_file_mesh = "./data/interactions/motorbike_rider/biker.ply"
-    #obj_file_mesh = "./data/interactions/hanging-rack_umbrella/umbrella.ply"
-    
+    '''env_file_mesh = "./data/interactions/table_bowl/table.ply"
+    obj_file_mesh = "./data/interactions/table_bowl/bowl.ply"
     env_name = "table"
-    obj_name = "bowl"
+    obj_name = "bowl"'''
 
-    output_dir = './output/ibs_generation_test_collision/'
+    env_file_mesh = "./data/interactions/hanging-rack_umbrella/hanging-rack.ply"
+    obj_file_mesh = "./data/interactions/hanging-rack_umbrella/umbrella.ply"
+    env_name = "hanging-rack"
+    obj_name = "umbrella"
+
+    '''env_file_mesh = "./data/interactions/motorbike_rider/motorbike.ply"
+    obj_file_mesh = "./data/interactions/motorbike_rider/biker.ply"
+    env_name = "motorbike"
+    obj_name = "biker"'''
+
+    output_dir = './output/ibs_generate_info_from_interaction/' + env_name + '_' + obj_name + '/'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -32,30 +35,31 @@ if __name__ == '__main__':
     obj_min_bound = np.asarray(tri_mesh_obj.vertices).min(axis=0)
     obj_max_bound = np.asarray(tri_mesh_obj.vertices).max(axis=0)
 
-    tri_mesh_env = trimesh.load_mesh( env_file_mesh )
+    tri_mesh_env = trimesh.load_mesh(env_file_mesh)
 
-    extension = np.linalg.norm(obj_max_bound-obj_min_bound)
-    middle_point = (obj_max_bound+obj_min_bound)/2
+    extension = np.linalg.norm(obj_max_bound - obj_min_bound)
+    middle_point = (obj_max_bound + obj_min_bound) / 2
 
-    tri_mesh_env_segmented = util.slide_mesh_by_bounding_box( tri_mesh_env, middle_point, extension )
+    tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
     # calculating cropping sphere parameters
     radio = np.linalg.norm(obj_max_bound - obj_min_bound)
     np_pivot = np.asarray(obj_max_bound + obj_min_bound) / 2
 
-    # execution paramaters
+    # execution parameters
     improve_by_collission = True
     in_collision = True
     resamplings = 2
-    original_sample_size = sampled_points = 3000
+    original_sample_size = sampled_points = 600
 
     data_frame = pd.DataFrame(columns=['obj_sample', 'env_sample', 'resamplings', 'improved_by_collision',
-                                       'obj_resampling', 'env_resampling', 'exec_time', 'in_collision', 'collision_points'])
+                                       'obj_resampling', 'env_resampling', 'exec_time', 'in_collision',
+                                       'collision_points'])
 
     while in_collision:
         start = time.time()  # timing execution
 
-        ibs_calculator = IBSMesh(tri_mesh_env_segmented,  tri_mesh_obj,
+        ibs_calculator = IBSMesh(tri_mesh_env_segmented, tri_mesh_obj,
                                  sampled_points, resamplings, improve_by_collission)
 
         end = time.time()  # timing execution
@@ -64,7 +68,7 @@ if __name__ == '__main__':
         print("time: ", execution_time)
 
         tri_mesh_ibs = ibs_calculator.get_trimesh()
-        tri_mesh_ibs_segmented = util.slide_mesh_by_sphere( tri_mesh_ibs, np_pivot, radio )
+        tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, np_pivot, radio)
 
         collision_tester = trimesh.collision.CollisionManager()
         collision_tester.add_object(env_name, tri_mesh_env)
@@ -81,12 +85,13 @@ if __name__ == '__main__':
         size_obj_sampled_points = np_obj_sampled_points.shape[0]
 
         print("original_points: ", sampled_points, " final_env_points: ",
-              size_env_sampled_points, " final_obj_points: ",  size_obj_sampled_points)
+              size_env_sampled_points, " final_obj_points: ", size_obj_sampled_points)
         print("In collission: ", in_collision)
         print("----------------------------------")
 
         data_frame.loc[len(data_frame)] = [sampled_points, sampled_points, resamplings, improve_by_collission,
-                                           size_obj_sampled_points, size_env_sampled_points, execution_time, in_collision, len(data)]
+                                           size_obj_sampled_points, size_env_sampled_points, execution_time,
+                                           in_collision, len(data)]
 
         filename = "%sibs_%s_%s_sampled_%d_resamplings_%d.ply" % (
             output_dir, env_name, obj_name, sampled_points, resamplings)
@@ -112,8 +117,8 @@ if __name__ == '__main__':
             sampled_points = sampled_points + 600
 
     # VISUALIZATION
-    tri_mesh_obj_sampled_points = trimesh.points.PointCloud( np_obj_sampled_points )
-    tri_mesh_env_sampled_points = trimesh.points.PointCloud( np_env_sampled_points )
+    tri_mesh_obj_sampled_points = trimesh.points.PointCloud(np_obj_sampled_points)
+    tri_mesh_env_sampled_points = trimesh.points.PointCloud(np_env_sampled_points)
 
     tri_mesh_obj.visual.face_colors = [0, 255, 0, 70]
     tri_mesh_obj_sampled_points.colors = [0, 255, 0, 255]
@@ -124,31 +129,30 @@ if __name__ == '__main__':
     tri_mesh_ibs_segmented.visual.face_colors = [0, 0, 255, 40]
 
     visualizer2 = trimesh.Scene([
-                                tri_mesh_obj_sampled_points,
-                                tri_mesh_env_sampled_points,
-                                tri_mesh_obj,
-                                tri_mesh_env_segmented,
-                                tri_mesh_ibs_segmented
-                                ])
+        tri_mesh_obj_sampled_points,
+        tri_mesh_env_sampled_points,
+        tri_mesh_obj,
+        tri_mesh_env_segmented,
+        tri_mesh_ibs_segmented
+    ])
     # display the environment with callback
     visualizer2.show()
 
     # VISUALIZATION REAL SOURCED POINTS
     used_points = np.unique(np.asarray(ibs_calculator.ridge_points))
-    tri_mesh_ibs_source_points = trimesh.points.PointCloud( ibs_calculator.points[ used_points ])
-    
+    tri_mesh_ibs_source_points = trimesh.points.PointCloud(ibs_calculator.points[used_points])
 
     tri_mesh_ibs_source_points.colors = [0, 0, 255, 255]
-    
+
     tri_mesh_obj.visual.face_colors = [0, 255, 0, 70]
     tri_mesh_env_segmented.visual.face_colors = [255, 0, 0, 100]
     tri_mesh_ibs_segmented.visual.face_colors = [0, 0, 255, 40]
 
     visualizer2 = trimesh.Scene([
-                                tri_mesh_ibs_source_points,
-                                tri_mesh_obj,
-                                tri_mesh_env_segmented,
-                                tri_mesh_ibs_segmented
-                                ])
+        tri_mesh_ibs_source_points,
+        tri_mesh_obj,
+        tri_mesh_env_segmented,
+        tri_mesh_ibs_segmented
+    ])
     # display the environment with callback
     visualizer2.show()
