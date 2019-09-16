@@ -53,6 +53,13 @@ class Sampler(ABC):
     def get_clouds_to_sample(self):
         pass
 
+    def get_info(self):
+        info = {}
+        info['sampler_name'] = self.__class__.__name__
+        info['sample_size'] = self.SAMPLE_SIZE
+        info['ibs_points'] = self.np_cloud_ibs.shape[0]
+        return info
+
 
 class WeightedSampler(Sampler, ABC):
     BATCH_SIZE_FOR_CLSST_POINT = 1000
@@ -86,16 +93,28 @@ class WeightedSampler(Sampler, ABC):
         self.rate_generated_random_numbers = rate_generated_random_numbers
         self.get_sample()
 
+    def get_info(self):
+        info = super().get_info()
+        info['generated_random_numbers']=self.rolls.size
+        info['rate_generated_random_numbers'] = self.rate_generated_random_numbers
+        return info
 
 class PoissonDiscRandomSampler(Sampler):
-    rate_ibs_samples = 5
+    rate_ibs_samples = 25
 
-    def __init__(self, rate_ibs_samples=5):
+    def __init__(self, rate_ibs_samples=25):
         self.rate_ibs_samples = rate_ibs_samples
         super().__init__()
 
     def get_clouds_to_sample(self):
         self.np_cloud_ibs = util.sample_points_poisson_disk(self.tri_mesh_ibs, self.SAMPLE_SIZE * self.rate_ibs_samples)
+
+
+    def get_info(self):
+        info = super().get_info()
+        info['rate_ibs_samples'] = self.rate_ibs_samples
+        return info
+
 
 
 class PoissonDiscWeightedSampler(WeightedSampler):
@@ -127,6 +146,11 @@ class PoissonDiscWeightedSampler(WeightedSampler):
         self.np_cloud_env = np.delete(self.np_cloud_env, bad_indexes, 0)
         self.np_cloud_ibs = np.delete(self.np_cloud_ibs, bad_indexes, 0)
         self.norms = np.delete(self.norms, bad_indexes, 0)
+
+    def get_info(self):
+        info = super().get_info()
+        info['rate_ibs_samples'] = self.rate_ibs_samples
+        return info
 
 
 class OnVerticesRandomSampler(Sampler):
@@ -207,6 +231,7 @@ class OnGivenPointCloudRandomSampler(Sampler):
         self.np_cloud_ibs = np.delete(self.np_cloud_ibs, bad_indexes, 0)
         self.np_cloud_env = np.delete(self.np_cloud_env, bad_indexes, 0)
         self.norms = np.delete(self.norms, bad_indexes, 0)
+
 
 
 class OnGivenPointCloudWeightedSampler(WeightedSampler):

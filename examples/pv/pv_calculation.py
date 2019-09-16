@@ -36,8 +36,9 @@ def visualize(trainer, sampler, tri_mesh_env, tri_mesh_obj):
 
 if __name__ == '__main__':
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
-    interaction_to_test = 'hang'
-    interaction = interactions_data[ interactions_data['interaction'] == interaction_to_test]
+
+    to_test = 'hang'
+    interaction = interactions_data[interactions_data['interaction'] == to_test]
 
     tri_mesh_env = trimesh.load_mesh( interaction[ 'tri_mesh_env'][0] )
     tri_mesh_obj = trimesh.load_mesh( interaction[ 'tri_mesh_obj'][0] )

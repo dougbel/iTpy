@@ -1,0 +1,19 @@
+{
+  "it_descriptor_version": 2.0,
+  "scene_name": "hanging-rack",
+  "object_name": "umbrella",
+  "sample_size": 512,
+  "orientations": 8,
+  "trainer": {
+    "normal_env": "-0.2564872116914387,0.13132454627063334,0.9575845517684395",
+    "pv_max_norm": 0.04115007011605143,
+    "pv_min_norm": 0.000381349723039483,
+    "sampler": {
+      "sampler_name": "OnGivenPointCloudWeightedSampler",
+      "sample_size": 512,
+      "ibs_points": 2190,
+      "generated_random_numbers": 1095000,
+      "rate_generated_random_numbers": 500
+    }
+  }
+}

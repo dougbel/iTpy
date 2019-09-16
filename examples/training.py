@@ -11,6 +11,8 @@ from it.training.agglomerator import Agglomerator
 
 if __name__ == '__main__':
 
+    #TODO Next
+
     obj_name = "bowl"
     obj_mesh_file = "./data/interactions/table_bowl/bowl.ply"
     env_name = "table"

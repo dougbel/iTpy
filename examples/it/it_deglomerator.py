@@ -2,24 +2,20 @@ import numpy as np
 
 import trimesh
 
-from  it.testing.deglomerator import Deglomerator
-
-
-
+from it.testing.deglomerator import Deglomerator
 
 if __name__ == '__main__':
+    tests = Deglomerator("./data/it/Hang", "Hang", "umbrella")
+    print(tests.pv_points)
 
-    tests = Deglomerator("./data/it/Place", "Place", "bowl")
-    print (tests.pv_points)
+    # VISUALIZATION
+    provenance_vectors = trimesh.load_path(
+        np.hstack((tests.pv_points, tests.pv_points + tests.pv_vectors)).reshape(-1, 2, 3))
 
-     #VISUALIZATION
-    provenance_vectors = trimesh.load_path( np.hstack(( tests.pv_points, tests.pv_points + tests.pv_vectors )).reshape(-1, 2, 3) )
-    
-    pv_origin    = trimesh.points.PointCloud( tests.pv_points, color=[0,0,255,250] )
-    
+    pv_origin = trimesh.points.PointCloud(tests.pv_points, color=[0, 0, 255, 250])
 
-    scene = trimesh.Scene( [ 
-                            provenance_vectors,
-                            pv_origin
-                            ])
+    scene = trimesh.Scene([
+        provenance_vectors,
+        pv_origin
+    ])
     scene.show()
