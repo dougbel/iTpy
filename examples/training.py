@@ -9,14 +9,14 @@ from it.training.saver import Saver
 if __name__ == '__main__':
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
 
-    to_test = 'hang'
+    to_test = 'place'
     interaction = interactions_data[interactions_data['interaction'] == to_test]
 
-    tri_mesh_env = trimesh.load_mesh(interaction['tri_mesh_env'][0])
-    tri_mesh_obj = trimesh.load_mesh(interaction['tri_mesh_obj'][0])
-    obj_name = interaction['obj'][0]
-    env_name = interaction['env'][0]
-    affordance_name = interaction['interaction'][0]
+    tri_mesh_env = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_env'])
+    tri_mesh_obj = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_obj'])
+    obj_name = interaction.iloc[0]['obj']
+    env_name = interaction.iloc[0]['env']
+    affordance_name = interaction.iloc[0]['interaction']
 
     obj_min_bound = np.asarray(tri_mesh_obj.vertices).min(axis=0)
     obj_max_bound = np.asarray(tri_mesh_obj.vertices).max(axis=0)
@@ -26,7 +26,10 @@ if __name__ == '__main__':
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
-    ibs_calculator = IBSMesh(400, 4)
+    init_size_sampling = 400
+    resamplings = 4
+
+    ibs_calculator = IBSMesh(init_size_sampling, resamplings)
     ibs_calculator.execute(tri_mesh_env_segmented, tri_mesh_obj)
 
     ################################
@@ -57,7 +60,10 @@ if __name__ == '__main__':
 
     agglomerator = Agglomerator(trainer)
 
-    Saver(affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj)
+    output_subdir = "IBSMesh_" + str(init_size_sampling) + "_" + str(resamplings)+ "_"
+    output_subdir += sampler.__class__.__name__ + "_"+ str(rate_ibs_samples) + "_" + str(rate_generated_random_numbers)
+
+    Saver(affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj, output_subdir)
 
     # VISUALIZATION
     provenance_vectors = trimesh.load_path(

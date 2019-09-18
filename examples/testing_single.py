@@ -4,49 +4,45 @@ import trimesh
 
 from it.testing.tester import Tester
 
-
-
 if __name__ == '__main__':
 
+    working_directory = "./data/it/IBSMesh_400_4_OnGivenPointCloudWeightedSampler_5_500"
 
+    tester = Tester(working_directory, working_directory+"/single_testing.json")
+    environment = trimesh.load_mesh('./data/it/gates400.ply', process=False)
 
-    tester = Tester("./data/it", "./data/it/single_testing.json")
-    scene = trimesh.load_mesh('./data/it/gates400.ply',process=False)
+    idx_ray, intersections = tester.intersections_with_scene(environment, [-0.48689266781021423 , -0.15363679409350514 , 0.8177121144402457])
+    angles_with_best_scores = tester.best_angle_by_affordance(environment, [-0.48689266781021423 , -0.15363679409350514 , 0.8177121144402457])
+    all_distances, resumed_distances = tester.measure_scores(environment, [-0.48689266781021423 , -0.15363679409350514 , 0.8177121144402457])
 
-
-    idx_ray, intersections = tester.intersections_with_scene(scene, [-0.97178262, -0.96805501,  0.82638292])
-    angles_with_best_scores = tester.best_angle_by_affordance(scene, [-0.97178262, -0.96805501,  0.82638292])
-    all_distances, resumed_distances = tester.measure_scores(scene, [-0.97178262, -0.96805501,  0.82638292])
-
-    
     affordance_name = tester.affordances[0][0]
     affordance_object = tester.affordances[0][1]
-    tri_mesh_object_file = "./data/it/" + affordance_name + "/" + affordance_name + "_" + affordance_object + "_object.ply"
+    tri_mesh_object_file = working_directory + "/"+affordance_name + "/" + affordance_name + "_" + affordance_object + "_object.ply"
 
-    bowl        = trimesh.load_mesh( tri_mesh_object_file, process=False)
-    bowl.apply_translation( [-0.97178262, -0.96805501,  0.82638292] )
-
+    bowl = trimesh.load_mesh(tri_mesh_object_file, process=False)
+    bowl.apply_translation([-0.48689266781021423 , -0.15363679409350514 , 0.8177121144402457])
 
     collision_tester = trimesh.collision.CollisionManager()
-    collision_tester.add_object('scene',scene)
+    collision_tester.add_object('scene', environment)
     in_collision = collision_tester.in_collision_single(bowl)
-
 
     print("In collission: " + str(in_collision))
 
+    scores = resumed_distances[0]
+    for i in range(tester.num_orientations):
+        print("distances score = ", scores[i])
+        idx_from = i * 512
+        idx_to = idx_from + 512
+        pv_begin = tester.compiled_pv_begin[idx_from:idx_to]
+        pv_direction = tester.compiled_pv_direction[idx_from:idx_to]
+        provenance_vectors = trimesh.load_path(np.hstack((pv_begin, pv_begin + pv_direction)).reshape(-1, 2, 3))
+        pv_intersections = intersections[idx_from:idx_to]
 
-    pv_begin = tester.compiled_pv_begin[:512]
-    pv_direction = tester.compiled_pv_direction[:512]
-    provenance_vectors = trimesh.load_path( np.hstack(( pv_begin, pv_begin + pv_direction)).reshape(-1, 2, 3) )
-    pv_intersections = intersections[:512]
-
-
-    scene.visual.face_colors = [100, 100, 100, 100]
-    bowl.visual.face_colors = [0, 255, 0, 100]
-    scene = trimesh.Scene( [ #trimesh.points.PointCloud(tests.compiled_sampled_points), 
-                            #trimesh.points.PointCloud(tests.compiled_pv_end), 
-                            provenance_vectors,
-                            trimesh.points.PointCloud(pv_intersections),
-                            scene,
-                            bowl ])
-    scene.show()
+        environment.visual.face_colors = [100, 100, 100, 100]
+        bowl.visual.face_colors = [0, 255, 0, 100]
+        scene = trimesh.Scene([
+            provenance_vectors,
+            trimesh.points.PointCloud(pv_intersections),
+            environment,
+            bowl])
+        scene.show()

@@ -7,11 +7,15 @@ from transforms3d.derivations.eulerangles import z_rotation
 
 
 class Saver:
-    output_dir = './output/descriptors_repository/'
+    output_dir = os.path.join('.', 'output', 'descriptors_repository')
     directory = None
 
-    def __init__(self, affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj):
-        self.directory = self.output_dir + affordance_name + "/"
+    def __init__(self, affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj,
+                 output_subdir=None):
+        if output_subdir is not None:
+            self.output_dir = os.path.join(self.output_dir, output_subdir)
+
+        self.directory = os.path.join(self.output_dir, affordance_name)
 
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
@@ -21,7 +25,7 @@ class Saver:
         self._save_meshes(affordance_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj)
 
     def _save_meshes(self, affordance_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj):
-        file_name_pattern = self.directory + affordance_name + "_" + obj_name
+        file_name_pattern = os.path.join(self.directory, affordance_name + "_" + obj_name)
 
         tri_mesh_env = agglomerator.it_trainer.sampler.tri_mesh_env
         tri_mesh_ibs_segmented = agglomerator.it_trainer.sampler.tri_mesh_ibs
@@ -33,8 +37,8 @@ class Saver:
         tri_mesh_obj.export(file_name_pattern + "_object.ply", "ply")
 
     def _save_agglomerated_it_descriptor(self, affordance_name, obj_name, agglomerator):
-        file_name_pattern = self.directory + "UNew_" + affordance_name + "_" + obj_name + "_descriptor_" + str(
-            agglomerator.ORIENTATIONS)
+        file_name_pattern = os.path.join(self.directory, "UNew_" + affordance_name + "_" +
+                                         obj_name + "_descriptor_" + str(agglomerator.ORIENTATIONS))
 
         pcd = o3d.geometry.PointCloud()
 
@@ -73,5 +77,5 @@ class Saver:
         # data['obj_point_vector']['idx_ref_object'] = 11
         # data['obj_point_vector']['vect_scene_to_object'] = '11,11,11'
 
-        with open(self.directory + affordance_name + '_' + obj_name + '.json', 'w') as outfile:
+        with open(os.path.join(self.directory, affordance_name + '_' + obj_name + '.json'), 'w') as outfile:
             json.dump(data, outfile)
