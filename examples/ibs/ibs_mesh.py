@@ -20,7 +20,8 @@ if __name__ == '__main__':
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
     start = time.time()  # timing execution
-    ibs_calculator = IBSMesh(tri_mesh_env_segmented, tri_mesh_obj, 400, 4)
+    ibs_calculator = IBSMesh(400, 4)
+    ibs_calculator.execute(tri_mesh_env_segmented, tri_mesh_obj)
     end = time.time()  # timing execution
     print(end - start, " seconds on IBS calculation (400 original points)")  # timing execution
 

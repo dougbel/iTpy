@@ -14,6 +14,7 @@ class Trainer:
     pv_max_norm = sys.float_info.min
     pv_min_norm = sys.float_info.max
     pv_mapped_norms = np.asarray([])
+
     sampler = None
 
     def __init__(self, tri_mesh_ibs, tri_mesh_env, sampler):
@@ -30,7 +31,6 @@ class Trainer:
         self.pv_vectors = self.pv_vectors[idx_order]
         self.pv_norms = self.pv_norms[idx_order]
         self.pv_mapped_norms = self.pv_mapped_norms[idx_order]
-
 
     def _get_provenance_vectors(self, tri_mesh_ibs, tri_mesh_env):
         self.sampler.execute(tri_mesh_ibs, tri_mesh_env)
@@ -50,11 +50,12 @@ class Trainer:
         self.pv_min_norm = self.pv_norms.min()
 
     def _get_mapped_norms(self):
-        self.pv_mapped_norms = np.asarray([self._map_norm(norm, self.pv_max_norm, self.pv_min_norm) for norm in self.pv_norms])
+        self.pv_mapped_norms = np.asarray(
+            [self._map_norm(norm, self.pv_max_norm, self.pv_min_norm) for norm in self.pv_norms])
 
     def get_info(self):
         info = {}
-        info['normal_env'] = str(self.normal_env[0][0])+','+str(self.normal_env[0][1])+','+str(self.normal_env[0][2])
+        info['normal_env'] = str(self.normal_env[0][0]) + ',' + str(self.normal_env[0][1]) + ',' + str(self.normal_env[0][2])
         info['pv_max_norm'] = self.pv_max_norm
         info['pv_min_norm'] = self.pv_min_norm
         info['sampler'] = self.sampler.get_info()

@@ -74,19 +74,27 @@ class IBS:
 
 class IBSMesh(IBS):
 
-    def __init__(self, tri_mesh_env, tri_mesh_obj, size_sampling=400, resamplings=4, improve_by_collission=True):
+    init_size_sampling = -1
+    resamplings = -1
+    improve_by_collision = -1
 
-        np_cloud_env_poisson = util.sample_points_poisson_disk(tri_mesh_env, size_sampling)
-        np_cloud_obj_poisson = util.sample_points_poisson_disk(tri_mesh_obj, size_sampling)
+    def __init__(self, init_size_sampling=400, resamplings=4, improve_by_collision=True):
+        self.init_size_sampling = init_size_sampling
+        self.resamplings = resamplings
+        self.improve_by_collision = improve_by_collision
+
+    def execute(self, tri_mesh_env, tri_mesh_obj ):
+        np_cloud_env_poisson = util.sample_points_poisson_disk(tri_mesh_env, self.init_size_sampling)
+        np_cloud_obj_poisson = util.sample_points_poisson_disk(tri_mesh_obj, self.init_size_sampling)
 
         np_cloud_obj = self.__project_points_in_sampled_mesh(tri_mesh_obj, np_cloud_obj_poisson, np_cloud_env_poisson)
         np_cloud_env = self.__project_points_in_sampled_mesh(tri_mesh_env, np_cloud_env_poisson, np_cloud_obj)
 
-        for i in range(1, resamplings):
+        for i in range(1, self.resamplings):
             np_cloud_obj = self.__project_points_in_sampled_mesh(tri_mesh_obj, np_cloud_obj, np_cloud_env)
             np_cloud_env = self.__project_points_in_sampled_mesh(tri_mesh_env, np_cloud_env, np_cloud_obj)
 
-        if improve_by_collission:
+        if self.improve_by_collision:
 
             self.__improve_sampling_by_collision_test(tri_mesh_env, tri_mesh_obj, np_cloud_env, np_cloud_obj)
 
@@ -151,3 +159,10 @@ class IBSMesh(IBS):
         np_new_sample = np.unique(np_new_sample, axis=0)
 
         return np_new_sample
+
+    def get_info(self):
+        info = {}
+        info['init_size_sampling'] = self.init_size_sampling
+        info['resamplings'] = self.resamplings
+        info['improve_by_collision'] = self.improve_by_collision
+        return info

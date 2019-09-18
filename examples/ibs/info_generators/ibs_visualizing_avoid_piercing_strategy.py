@@ -38,7 +38,8 @@ if __name__ == '__main__':
 
     for sampled_points in points:
         start = time.time()  # timing execution
-        ibs_calculator = IBSMesh(tri_mesh_env_segmented, tri_mesh_obj, sampled_points, 4)
+        ibs_calculator = IBSMesh(sampled_points, 4)
+        ibs_calculator.execute(tri_mesh_env_segmented, tri_mesh_obj)
         end = time.time()  # timing execution
 
         # getting sampled point in environment and object used to generate the IBS surface
@@ -102,4 +103,4 @@ if __name__ == '__main__':
             f.close()
 
     # display the environment with callback
-    visualizer2.show( callback = get_camera )
+    visualizer2.show(callback=get_camera)

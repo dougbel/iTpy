@@ -58,10 +58,8 @@ if __name__ == '__main__':
 
     while in_collision:
         start = time.time()  # timing execution
-
-        ibs_calculator = IBSMesh(tri_mesh_env_segmented, tri_mesh_obj,
-                                 sampled_points, resamplings, improve_by_collission)
-
+        ibs_calculator = IBSMesh(sampled_points, resamplings, improve_by_collission)
+        ibs_calculator.execute(tri_mesh_env_segmented, tri_mesh_obj)
         end = time.time()  # timing execution
         execution_time = end - start
 

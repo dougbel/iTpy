@@ -1,0 +1,77 @@
+import math
+import json
+import os
+import numpy as np
+from open3d import open3d as o3d
+from transforms3d.derivations.eulerangles import z_rotation
+
+
+class Saver:
+    output_dir = './output/descriptors_repository/'
+    directory = None
+
+    def __init__(self, affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj):
+        self.directory = self.output_dir + affordance_name + "/"
+
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
+
+        self._save_info(affordance_name, env_name, obj_name, agglomerator, ibs_calculator)
+        self._save_agglomerated_it_descriptor(affordance_name, obj_name, agglomerator)
+        self._save_meshes(affordance_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj)
+
+    def _save_meshes(self, affordance_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj):
+        file_name_pattern = self.directory + affordance_name + "_" + obj_name
+
+        tri_mesh_env = agglomerator.it_trainer.sampler.tri_mesh_env
+        tri_mesh_ibs_segmented = agglomerator.it_trainer.sampler.tri_mesh_ibs
+        tri_mesh_ibs = ibs_calculator.get_trimesh()
+
+        tri_mesh_ibs_segmented.export(file_name_pattern + "_ibs_mesh_segmented.ply", "ply")
+        tri_mesh_ibs.export(file_name_pattern + "_ibs_mesh.ply", "ply")
+        tri_mesh_env.export(file_name_pattern + "_environment.ply", "ply")
+        tri_mesh_obj.export(file_name_pattern + "_object.ply", "ply")
+
+    def _save_agglomerated_it_descriptor(self, affordance_name, obj_name, agglomerator):
+        file_name_pattern = self.directory + "UNew_" + affordance_name + "_" + obj_name + "_descriptor_" + str(
+            agglomerator.ORIENTATIONS)
+
+        pcd = o3d.geometry.PointCloud()
+
+        pcd.points = o3d.utility.Vector3dVector(agglomerator.agglomerated_pv_points)
+        o3d.io.write_point_cloud(file_name_pattern + "_points.pcd", pcd, write_ascii=True)
+
+        pcd.points = o3d.utility.Vector3dVector(agglomerator.agglomerated_pv_vectors)
+        o3d.io.write_point_cloud(file_name_pattern + "_vectors.pcd", pcd, write_ascii=True)
+
+        pcd.points = o3d.utility.Vector3dVector(agglomerator.agglomerated_pv_vdata)
+        o3d.io.write_point_cloud(file_name_pattern + "_vdata.pcd", pcd, write_ascii=True)
+
+        pcd.points = o3d.utility.Vector3dVector(agglomerator.agglomerated_normals)
+        o3d.io.write_point_cloud(file_name_pattern + "_normals_env.pcd", pcd, write_ascii=True)
+
+    def _save_info(self, affordance_name, env_name, obj_name, agglomerator, ibs_calculator):
+        data = {}
+        data['it_descriptor_version'] = 2.0
+        data['affordance_name'] = affordance_name
+        data['env_name'] = env_name
+        data['obj_name'] = obj_name
+        data['sample_size'] = agglomerator.it_trainer.sampler.SAMPLE_SIZE
+        data['orientations'] = agglomerator.ORIENTATIONS
+        data['trainer'] = agglomerator.it_trainer.get_info()
+        data['ibs_calculator'] = ibs_calculator.get_info()
+        # data['reference'] = {}
+        # data['reference']['idxRefIBS'] = 8
+        # data['reference']['refPointIBS'] = '8,8,8'
+        # data['scene_point'] = {}
+        # data['scene_point']['idxScenePoint'] = 9
+        # data['scene_point']['refPointScene'] = '9,9,9'
+        # data['ibs_point_vector'] = {}
+        # data['ibs_point_vector']['idx_ref_ibs'] = 10
+        # data['ibs_point_vector']['vect_scene_to_ibs'] = '10,10,10'
+        # data['obj_point_vector'] = {}
+        # data['obj_point_vector']['idx_ref_object'] = 11
+        # data['obj_point_vector']['vect_scene_to_object'] = '11,11,11'
+
+        with open(self.directory + affordance_name + '_' + obj_name + '.json', 'w') as outfile:
+            json.dump(data, outfile)

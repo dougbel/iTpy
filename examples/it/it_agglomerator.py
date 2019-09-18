@@ -18,6 +18,7 @@ if __name__ == '__main__':
     tri_mesh_obj = trimesh.load_mesh(interaction['tri_mesh_obj'][0])
     tri_mesh_ibs_segmented = trimesh.load_mesh(interaction['tri_mesh_ibs_segmented'][0])
     np_cloud_env = np.asarray(o3d.io.read_point_cloud(interaction['o3d_cloud_sources_ibs'][0]).points)
+
     rate_generated_random_numbers = 500
 
     sampler_ibs_srcs_weighted = OnGivenPointCloudWeightedSampler(np_cloud_env, rate_generated_random_numbers)
@@ -26,6 +27,14 @@ if __name__ == '__main__':
 
     agg = Agglomerator(trainer)
 
-    agg.save_agglomerated_iT("Hang", "hanging-rack", "umbrella", tri_mesh_env, tri_mesh_obj, tri_mesh_ibs_segmented)
+    # VISUALIZATION
+    provenance_vectors = trimesh.load_path(
+        np.hstack((agg.agglomerated_pv_points, agg.agglomerated_pv_points + agg.agglomerated_pv_vectors)).reshape(-1, 2, 3))
 
-    print("Finished")
+    pv_origin = trimesh.points.PointCloud(agg.agglomerated_pv_points, color=[0, 0, 255, 250])
+
+    scene = trimesh.Scene([
+        provenance_vectors,
+        pv_origin
+    ])
+    scene.show()
