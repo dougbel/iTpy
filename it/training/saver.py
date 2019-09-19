@@ -20,7 +20,7 @@ class Saver:
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
 
-        self._save_info(affordance_name, env_name, obj_name, agglomerator, ibs_calculator)
+        self._save_info(affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj)
         self._save_agglomerated_it_descriptor(affordance_name, obj_name, agglomerator)
         self._save_meshes(affordance_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj)
 
@@ -54,12 +54,19 @@ class Saver:
         pcd.points = o3d.utility.Vector3dVector(agglomerator.agglomerated_normals)
         o3d.io.write_point_cloud(file_name_pattern + "_normals_env.pcd", pcd, write_ascii=True)
 
-    def _save_info(self, affordance_name, env_name, obj_name, agglomerator, ibs_calculator):
+    def _obj_influence_radio(self, tri_mesh_obj):
+        obj_min_bound = np.asarray(tri_mesh_obj.vertices).min(axis=0)
+        obj_max_bound = np.asarray(tri_mesh_obj.vertices).max(axis=0)
+        sphere_ro = np.linalg.norm(obj_max_bound - obj_min_bound)
+        return sphere_ro
+
+    def _save_info(self, affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj):
         data = {}
         data['it_descriptor_version'] = 2.0
         data['affordance_name'] = affordance_name
         data['env_name'] = env_name
         data['obj_name'] = obj_name
+        data['obj_influence_radio'] = self._obj_influence_radio(tri_mesh_obj)
         data['sample_size'] = agglomerator.it_trainer.sampler.SAMPLE_SIZE
         data['orientations'] = agglomerator.ORIENTATIONS
         data['trainer'] = agglomerator.it_trainer.get_info()
