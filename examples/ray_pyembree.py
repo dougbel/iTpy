@@ -81,7 +81,7 @@ def test_it(points_to_test):
     for point in points_to_test:
         start = time.time() ## timing execution
 
-        angles_with_best_scores = tester.best_angle_by_affordance(scene, point)
+        angles_with_best_scores = tester.best_angle_by_distance_by_affordance(scene, point)
         
         output.append( list(point) + list(angles_with_best_scores[0]) )
         
