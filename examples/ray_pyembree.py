@@ -104,6 +104,13 @@ def test_it(points_to_test):
 
 if __name__ == '__main__':
 
+
+    # TODO made a sampling by poisson disc
+    # TODO Test and save results of best alignament in order to play with results in a different program
+    # TODO Test with the kitchen (artificial scene)
+    # Try different combinations of distances and missing values
+    
+
     # test on a sphere mesh
     scene = trimesh.load_mesh('./data/it/gates400d.ply',process=False)
     # make mesh transparent- ish
