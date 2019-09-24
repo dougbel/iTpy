@@ -51,7 +51,7 @@ class Tester:
             index2 += increments
         self.compiled_pv_end = self.compiled_pv_begin + self.compiled_pv_direction
 
-    def get_analizer(self, scene, position):
+    def get_analyzer(self, scene, position):
         translation = np.asarray(position) - self.last_position
         self.compiled_pv_begin += translation
         self.compiled_pv_end += translation
@@ -65,4 +65,5 @@ class Tester:
             return_locations=True,
             multiple_hits=False)
 
-        return Analizer(idx_ray, intersections, self.num_it_to_test, self.num_orientations, self.compiled_pv_end)
+        return Analizer(idx_ray, intersections, self.num_it_to_test, self.objs_influence_radios, self.num_orientations,
+                        self.compiled_pv_end)

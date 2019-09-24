@@ -18,13 +18,15 @@ if __name__ == '__main__':
     environment = trimesh.load_mesh('./data/it/gates400.ply', process=False)
 
     # testing_point = [-0.48689266781021423, -0.15363679409350514,0.8177121144402457]
-    # testing_point = [-0.97178262, -0.96805501, 0.82738298] #in the edge of table, but with floor
-    testing_point = [-2.8, 1., 0.00362764]  # half inside the scene, half outside
+    testing_point = [-0.97178262, -0.96805501, 0.82738298] #in the edge of table, but with floor
+    # testing_point = [-2.8, 1., 0.00362764]  # half inside the scene, half outside
 
-    analyzer = tester.get_analizer(environment, testing_point)
+    analyzer = tester.get_analyzer(environment, testing_point)
+
+    analyzer.measure_scores()
 
     angles_with_best_score = analyzer.best_angle_by_distance_by_affordance()
-    all_distances, resumed_distances, missed = analyzer.measure_scores()
+    all_distances, resumed_distances, missed = analyzer.raw_measured_scores()
 
     # as this is a run with only one affordance to test, only get the first row of results
     first_affordance_scores = angles_with_best_score[0]

@@ -18,37 +18,32 @@ class Results:
 class Analizer:
     results = None
 
-    def __init__(self, idx_ray, calculated_intersections, num_it_to_test, num_orientations, expected_intersections):
+    def __init__(self, idx_ray, calculated_intersections, num_it_to_test, influence_radius, num_orientations,
+                 expected_intersections):
         self.idx_ray = idx_ray
         self.calculated_intersections = calculated_intersections
         self.num_it_to_test = num_it_to_test
+        self.influence_radius = influence_radius
         self.num_orientations = num_orientations
         self.expected_intersections = expected_intersections
 
+    def raw_measured_scores(self):
+
+        all_distances = self._distances_between_calculated_and_expected_intersections()
+
+        resumed_distances, missed = self._resume( all_distances)
+
+        return all_distances, resumed_distances, missed
+
     def measure_scores(self):
 
-        # calculated offline during training iT
-        trained_intersections = self.expected_intersections[self.idx_ray]
+        all_distances = self._distances_between_calculated_and_expected_intersections()
 
-        intersections_distances = np.linalg.norm(self.calculated_intersections - trained_intersections, axis=1)
+        # avoid consider distances farther than the influence radius
+        filtered_distances = self._avoid_distances_farther_influence_radius(all_distances)
 
-        all_distances = np.empty(len(self.expected_intersections))
-        all_distances[:] = 'NaN'
+        resumed_distances, missed = self._resume( filtered_distances)
 
-        for index, raw_distance in zip(self.idx_ray, intersections_distances):
-            all_distances[index] = raw_distance
-
-        resumed_distances = np.array(list(map(np.nansum,
-                                              np.split(
-                                                  all_distances,
-                                                  self.num_it_to_test * self.num_orientations
-                                              )))).reshape(self.num_it_to_test, self.num_orientations)
-
-        missed = np.array(list(map(self._count_nan,
-                                   np.split(
-                                       all_distances,
-                                       self.num_it_to_test * self.num_orientations
-                                   )))).reshape(self.num_it_to_test, self.num_orientations)
         self.results = Results(all_distances, resumed_distances, missed)
         return self.results.all_distances, self.results.resumed_distances, self.results.missed
 
@@ -83,3 +78,45 @@ class Analizer:
 
     def _count_nan(self, a):
         return len(a[np.isnan(a)])
+
+    def _resume(self, all_distances):
+        resumed_distances = np.array(list(map(np.nansum,
+                                              np.split(
+                                                  all_distances,
+                                                  self.num_it_to_test * self.num_orientations
+                                              )))).reshape(self.num_it_to_test, self.num_orientations)
+
+        resumed_missed = np.array(list(map(self._count_nan,
+                                   np.split(
+                                       all_distances,
+                                       self.num_it_to_test * self.num_orientations
+                                   )))).reshape(self.num_it_to_test, self.num_orientations)
+
+        return resumed_distances, resumed_missed
+
+    def _distances_between_calculated_and_expected_intersections(self):
+        # calculated offline during training iT
+        trained_intersections = self.expected_intersections[self.idx_ray]
+
+        intersections_distances = np.linalg.norm(self.calculated_intersections - trained_intersections, axis=1)
+
+        all_distances = np.empty(len(self.expected_intersections))
+        all_distances[:] = 'NaN'
+
+        for index, raw_distance in zip(self.idx_ray, intersections_distances):
+            all_distances[index] = raw_distance
+
+        return all_distances
+
+    def _avoid_distances_farther_influence_radius(self, all_distances):
+        filter_distances = np.copy(all_distances)
+        # avoid consider distances farther than the influence radius
+        pv_by_interaction = int(self.expected_intersections.shape[0] / self.num_it_to_test)
+        for interaction in self.range(self.num_it_to_test):
+            idx_from = pv_by_interaction * interaction
+            idx_to = idx_from + pv_by_interaction
+            to_check = filter_distances[idx_from:idx_to]
+            to_check[to_check > self.influence_radius[0]] = 'NaN'
+            filter_distances[idx_from:idx_to] = to_check
+
+        return filter_distances
