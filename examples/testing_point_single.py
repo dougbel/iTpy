@@ -23,20 +23,21 @@ if __name__ == '__main__':
 
     analyzer = tester.get_analyzer(environment, testing_point)
 
-    analyzer.measure_scores()
-
     angles_with_best_score = analyzer.best_angle_by_distance_by_affordance()
-    all_distances, resumed_distances, missed = analyzer.raw_measured_scores()
+    all_distances, resumed_distances, missed = analyzer.measure_scores()
 
     # as this is a run with only one affordance to test, only get the first row of results
     first_affordance_scores = angles_with_best_score[0]
-    score = first_affordance_scores[2]
-    angle = first_affordance_scores[1]
     orientation = int(first_affordance_scores[0])
+    angle = first_affordance_scores[1]
+    score = first_affordance_scores[2]
+    missing = first_affordance_scores[3]
+
 
     affordance_name = tester.affordances[0][0]
     affordance_object = tester.affordances[0][1]
     tri_mesh_object_file = tester.objs_filenames[0]
+    influence_radius = tester.objs_influence_radios[0]
 
     # visualizing
     bowl = trimesh.load_mesh(tri_mesh_object_file, process=False)
@@ -54,9 +55,14 @@ if __name__ == '__main__':
     T = testing_point
     A = compose(T, R, Z)
     bowl.apply_transform(A)
+
     environment.visual.face_colors = [100, 100, 100, 100]
     bowl.visual.face_colors = [0, 255, 0, 100]
     intersections = trimesh.points.PointCloud(pv_intersections, color=[0, 255, 255, 255])
-    scene = trimesh.Scene([provenance_vectors, intersections, environment, bowl])
+
+    sphere = trimesh.primitives.Sphere(radius=influence_radius, center=testing_point, subdivisions=4)
+    sphere.visual.face_colors = [100, 0, 0, 20]
+
+    scene = trimesh.Scene([provenance_vectors, intersections, environment, bowl, sphere])
     scene.show()
     # bowl.apply_transform(linalg.inv(A))

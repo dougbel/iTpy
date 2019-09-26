@@ -61,10 +61,10 @@ def test_collision(tri_mesh_env, tri_mesh_obj, points_to_test):
         scene.show()'''
 
         # TODO TEST WITH Open3D is_intersecting(self, arg0) http://www.open3d.org/docs/release/python_api/open3d.geometry.TriangleMesh.html
-        start = time.time()  ## timing execution
+        start = time.time()  # timing execution
         in_collision = collision_tester.in_collision_single(tri_mesh_obj)
-        end = time.time()  ## timing execution
-        period.append(end - start)  ## timing execution
+        end = time.time()  # timing execution
+        period.append(end - start)  # timing execution
 
         if not in_collision:
             no_collided.append(point)
@@ -87,7 +87,10 @@ def test_it(tester, environment, points_to_test):
     period = []
 
     data_frame = pd.DataFrame(
-        columns=['point_x', 'point_y', 'point_z', 'score', 'angle', 'orientation', 'calculation_time'])
+        columns=['point_x', 'point_y', 'point_z', 'score', 'missing', 'angle', 'orientation', 'calculation_time'])
+
+    max_distance = 2
+    l_good_points = []
 
     for testing_point in points_to_test:
         start = time.time()  ## timing execution
@@ -100,12 +103,16 @@ def test_it(tester, environment, points_to_test):
         period.append(calculation_time)  ## timing execution
 
         first_affordance_scores = angle_with_best_score[0]
-        score = first_affordance_scores[2]
-        angle = first_affordance_scores[1]
         orientation = int(first_affordance_scores[0])
+        angle = first_affordance_scores[1]
+        score = first_affordance_scores[2]
+        missing = int(first_affordance_scores[3])
 
-        data_frame.loc[len(data_frame)] = [testing_point[0], testing_point[1], testing_point[2], score, angle,
+        data_frame.loc[len(data_frame)] = [testing_point[0], testing_point[1], testing_point[2], score, missing, angle,
                                            orientation, calculation_time]
+
+        if score < 2:
+            l_good_points.append(testing_point)
 
         current_percent = int(100 * index / points_to_test.shape[0])
         if current_percent - progress > 0:
@@ -116,10 +123,14 @@ def test_it(tester, environment, points_to_test):
     print(np.asarray(period).mean(), " seconds on iT test")  ## timing execution
     print(60 / np.asarray(period).mean(), " iT tests each min")  ## timing execution
 
-    return data_frame
+    np_good_points = np.asarray(l_good_points)
+
+    return data_frame, np_good_points
 
 
 if __name__ == '__main__':
+    # TODO Measure the maximum distance by influence radius
+    # TODO Test avoiding points with normal vector in environment
     # TODO Test with the kitchen (artificial scene)
     # Try different combinations of distances and missing values
 
@@ -141,7 +152,7 @@ if __name__ == '__main__':
     np_test_points = util.sample_points_poisson_disk(tri_mesh_env, sampling_size)
 
     # Testing iT
-    results_it_test = test_it(tester, tri_mesh_env, np_test_points)
+    results_it_test, good_points = test_it(tester, tri_mesh_env, np_test_points)
 
     # Testing collision
     no_collision = test_collision(tri_mesh_env, tri_mesh_obj, np_test_points)
@@ -164,6 +175,15 @@ if __name__ == '__main__':
     # it test
     filename = "%s/scores.csv" % (output_dir)
     results_it_test.to_csv(filename)
+    good_points_pcd = o3d.geometry.PointCloud()
+    good_points_pcd.points = o3d.utility.Vector3dVector(good_points)
+    o3d.io.write_point_cloud(output_dir + "/good_points.pcd", good_points_pcd)
+    tri_mesh_obj.visual.face_colors = [0, 255, 0, 255]
+    tri_mesh_env.visual.face_colors = [100, 100, 100, 100]
+    output = trimesh.points.PointCloud(np.asarray(good_points))
+    scene = trimesh.Scene([tri_mesh_env, tri_mesh_obj, output])
+    scene.show()
+
 
     # collision test
     no_collision_pcd = o3d.geometry.PointCloud()
@@ -178,7 +198,6 @@ if __name__ == '__main__':
 
     # environment.show(callback=move_object)
 
-    # TODO not permit too far points
     # TODO cut partially the mesh aorund the testing point
     # TODO use libraries as cupy to work with numpy arrays
     # TODO fin alternative ray tracing approaches that uses the gpu
