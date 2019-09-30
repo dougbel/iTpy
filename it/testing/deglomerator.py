@@ -1,7 +1,7 @@
 import json
 from os import path
 import numpy as np
-from open3d import open3d as o3d
+import open3d as o3d
 
 
 class Deglomerator:

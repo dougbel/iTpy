@@ -2,7 +2,7 @@ import math
 import json
 import os
 import numpy as np
-from open3d import open3d as o3d
+import open3d as o3d
 from transforms3d.derivations.eulerangles import z_rotation
 
 

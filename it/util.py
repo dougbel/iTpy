@@ -9,7 +9,7 @@ def sample_points_poisson_disk(tri_mesh, number_of_points, init_factor=5):
     o3d_mesh.vertices = o3d.utility.Vector3dVector(tri_mesh.vertices)
     o3d_mesh.triangles = o3d.utility.Vector3iVector(tri_mesh.faces)
 
-    od3_cloud_poisson = o3d.geometry.sample_points_poisson_disk(o3d_mesh, number_of_points, init_factor)
+    od3_cloud_poisson = o3d.geometry.TriangleMesh.sample_points_poisson_disk(o3d_mesh, number_of_points, init_factor)
 
     return np.asarray(od3_cloud_poisson.points)
 

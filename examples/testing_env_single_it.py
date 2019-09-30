@@ -1,6 +1,6 @@
 import trimesh
 import numpy as np
-from open3d import open3d as o3d
+import open3d as o3d
 from transforms3d.affines import compose
 import pandas as pd
 import time
@@ -10,17 +10,17 @@ import it.util as util
 
 last_position = np.array([0, 0, 0])
 index = 0
-R = np.eye(3)  # rotation matrix
-Z = np.ones(3)  # zooms
+r = np.eye(3)  # rotation matrix
+z = np.ones(3)  # zooms
 
 
-def move_object(scene):
+def move_object(dynamic_scene):
     """
     A callback passed to a scene viewer which will update
     transforms in the viewer periodically.
     Parameters
     -------------
-    scene : trimesh.Scene
+    dynamic_scene : trimesh.Scene
       Scene containing geometry
     """
     global last_position
@@ -29,19 +29,19 @@ def move_object(scene):
     translation = np_test_points[index] - last_position
     index += 1
 
-    T = translation  # translations
+    t = translation  # translations
 
-    A = compose(T, R, Z)
+    a = compose(t, r, z)
 
     # take one of the two spheres arbitrarily
-    node = scene.graph.nodes_geometry[1]
+    node = dynamic_scene.graph.nodes_geometry[1]
     # apply the transform to the node
-    scene.graph.update(node, matrix=A)
+    dynamic_scene.graph.update(node, matrix=a)
 
 
 def test_collision(tri_mesh_env, tri_mesh_obj, points_to_test):
     no_collided = []
-    last_position = np.array([0, 0, 0])
+    last_pos = np.array([0, 0, 0])
     index = 0
     progress = 0
     period = []
@@ -50,7 +50,7 @@ def test_collision(tri_mesh_env, tri_mesh_obj, points_to_test):
     collision_tester = trimesh.collision.CollisionManager()
     collision_tester.add_object('scene', tri_mesh_env)
     for point in points_to_test:
-        translation = point - last_position
+        translation = point - last_pos
 
         tri_mesh_obj.apply_translation(translation)
 
@@ -60,7 +60,8 @@ def test_collision(tri_mesh_env, tri_mesh_obj, points_to_test):
         scene = trimesh.Scene([tri_mesh_env, tri_mesh_obj, output])
         scene.show()'''
 
-        # TODO TEST WITH Open3D is_intersecting(self, arg0) http://www.open3d.org/docs/release/python_api/open3d.geometry.TriangleMesh.html
+        # TODO TEST WITH Open3D is_intersecting(self, arg0)
+        #  http://www.open3d.org/docs/release/python_api/open3d.geometry.TriangleMesh.html
         start = time.time()  # timing execution
         in_collision = collision_tester.in_collision_single(tri_mesh_obj)
         end = time.time()  # timing execution
@@ -68,7 +69,7 @@ def test_collision(tri_mesh_env, tri_mesh_obj, points_to_test):
 
         if not in_collision:
             no_collided.append(point)
-        last_position = point
+        last_pos = point
 
         current_percent = int(100 * index / points_to_test.shape[0])
         if current_percent - progress > 0:
@@ -76,31 +77,30 @@ def test_collision(tri_mesh_env, tri_mesh_obj, points_to_test):
             print(progress, "%")
         index += 1
 
-    print(np.asarray(period).mean(), " seconds on each collision test")  ## timing execution
-    print(60 / np.asarray(period).mean(), " collision test each min")  ## timing execution
+    print(np.asarray(period).mean(), " seconds on each collision test")  # timing execution
+    print(60 / np.asarray(period).mean(), " collision test each min")  # timing execution
     return no_collided
 
 
-def test_it(tester, environment, points_to_test):
-    index = 0
+def test_it(it_tester, environment, points_to_test):
+    idx = 0
     progress = 0
     period = []
 
-    data_frame = pd.DataFrame(
-        columns=['point_x', 'point_y', 'point_z', 'score', 'missing', 'angle', 'orientation', 'calculation_time'])
+    data_frame = pd.DataFrame(columns=['point_x', 'point_y', 'point_z', 'score', 'missing', 'angle',
+                                       'orientation', 'calculation_time'])
 
-    max_distance = 2
     l_good_points = []
 
     for testing_point in points_to_test:
-        start = time.time()  ## timing execution
+        start = time.time()  # timing execution
 
-        analyzer = tester.get_analyzer(environment, testing_point)
+        analyzer = it_tester.get_analyzer(environment, testing_point)
         angle_with_best_score = analyzer.best_angle_by_distance_by_affordance()
 
-        end = time.time()  ## timing execution
+        end = time.time()  # timing execution
         calculation_time = end - start
-        period.append(calculation_time)  ## timing execution
+        period.append(calculation_time)  # timing execution
 
         first_affordance_scores = angle_with_best_score[0]
         orientation = int(first_affordance_scores[0])
@@ -114,14 +114,14 @@ def test_it(tester, environment, points_to_test):
         if score < 2:
             l_good_points.append(testing_point)
 
-        current_percent = int(100 * index / points_to_test.shape[0])
+        current_percent = int(100 * idx / points_to_test.shape[0])
         if current_percent - progress > 0:
             progress = current_percent
             print(progress, "%")
-        index += 1
+        idx += 1
 
-    print(np.asarray(period).mean(), " seconds on iT test")  ## timing execution
-    print(60 / np.asarray(period).mean(), " iT tests each min")  ## timing execution
+    print(np.asarray(period).mean(), " seconds on iT test")  # timing execution
+    print(60 / np.asarray(period).mean(), " iT tests each min")  # timing execution
 
     np_good_points = np.asarray(l_good_points)
 
@@ -166,6 +166,8 @@ if __name__ == '__main__':
 
     tri_mesh_env.export(output_dir + "/environment.ply", "ply")
     tri_mesh_obj.export(output_dir + "/object.ply", "ply")
+    tri_mesh_obj.visual.face_colors = [0, 255, 0, 255]
+    tri_mesh_env.visual.face_colors = [100, 100, 100, 100]
 
     # test points
     o3d_test_points = o3d.geometry.PointCloud()
@@ -173,25 +175,20 @@ if __name__ == '__main__':
     o3d.io.write_point_cloud(output_dir + "/test_points.pcd", o3d_test_points)
 
     # it test
-    filename = "%s/scores.csv" % (output_dir)
+    filename = "%s/scores.csv" % output_dir
     results_it_test.to_csv(filename)
     good_points_pcd = o3d.geometry.PointCloud()
     good_points_pcd.points = o3d.utility.Vector3dVector(good_points)
     o3d.io.write_point_cloud(output_dir + "/good_points.pcd", good_points_pcd)
-    tri_mesh_obj.visual.face_colors = [0, 255, 0, 255]
-    tri_mesh_env.visual.face_colors = [100, 100, 100, 100]
     output = trimesh.points.PointCloud(np.asarray(good_points))
     scene = trimesh.Scene([tri_mesh_env, tri_mesh_obj, output])
     scene.show()
-
 
     # collision test
     no_collision_pcd = o3d.geometry.PointCloud()
     no_collision_pcd.points = o3d.utility.Vector3dVector(no_collision)
     o3d.io.write_point_cloud(output_dir + "/no_collision_points.pcd", no_collision_pcd)
 
-    tri_mesh_obj.visual.face_colors = [0, 255, 0, 255]
-    tri_mesh_env.visual.face_colors = [100, 100, 100, 100]
     output = trimesh.points.PointCloud(np.asarray(no_collision))
     scene = trimesh.Scene([tri_mesh_env, tri_mesh_obj, output])
     scene.show()

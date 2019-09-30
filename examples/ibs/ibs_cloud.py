@@ -3,7 +3,7 @@ import numpy as np
 from os import remove
 
 import trimesh
-from open3d import open3d as o3d
+import open3d as o3d
 
 import it.util as util
 from it.training.ibs import IBS
