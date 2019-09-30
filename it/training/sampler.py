@@ -40,7 +40,7 @@ class Sampler(ABC):
 
     def map_norm(self, norm, max, min):
         return (norm - min) * (0 - 1) / (max - min) + 1
-        # return(value_in-min_original_range)*(max_mapped-min_mapped)/(max_original_range-min_original_range)+min_mapped;
+        # return(value_in-min_original_range)*(max_mapped-min_mapped)/(max_original_range-min_original_range)+min_mapped
 
     def get_sample(self):
         self.idx_ibs_cloud_sample = np.random.randint(0, self.np_cloud_ibs.shape[0], self.SAMPLE_SIZE)

@@ -44,6 +44,7 @@ class Trainer:
 
     def _map_norm(self, norm, max, min):
         return (norm - min) * (0 - 1) / (max - min) + 1
+        # return(value_in-min_original_range)*(max_mapped-min_mapped)/(max_original_range-min_original_range)+min_mapped
 
     def _set_pv_min_max_mapped_norms(self):
         self.pv_max_norm = self.pv_norms.max()

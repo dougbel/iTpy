@@ -123,7 +123,7 @@ class Analizer:
             idx_from = pv_by_interaction * interaction
             idx_to = idx_from + pv_by_interaction
             to_check = filter_distances[idx_from:idx_to]
-            to_check[to_check > self.influence_radius[0]] = math.nan
+            to_check[to_check > self.influence_radius[interaction]] = math.nan
             filter_distances[idx_from:idx_to] = to_check
 
         return filter_distances
