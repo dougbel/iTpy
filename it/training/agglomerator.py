@@ -28,10 +28,10 @@ class Agglomerator:
 
         for angle in orientations:
             rotation = z_rotation(angle)
-            agglomerated_pv_points.append(np.dot(it_trainer.pv_points, rotation))
-            agglomerated_pv_vectors.append(np.dot(it_trainer.pv_vectors, rotation))
+            agglomerated_pv_points.append(np.dot(it_trainer.pv_points, rotation.T))
+            agglomerated_pv_vectors.append(np.dot(it_trainer.pv_vectors, rotation.T))
             agglomerated_pv_vdata.append(pv_vdata)
-            agglomerated_normals.append(np.dot(it_trainer.normal_env, rotation))
+            agglomerated_normals.append(np.dot(it_trainer.normal_env, rotation.T))
 
         self.agglomerated_pv_points = np.asarray(agglomerated_pv_points).reshape(-1, 3)
         self.agglomerated_pv_vectors = np.asarray(agglomerated_pv_vectors).reshape(-1, 3)

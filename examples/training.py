@@ -1,5 +1,6 @@
 import pandas as pd
 
+from it.training.maxdistancescalculator import MaxDistancesCalculator
 from it.training.ibs import IBSMesh
 from it.training.sampler import *
 from it.training.trainer import Trainer
@@ -9,7 +10,7 @@ from it.training.saver import Saver
 if __name__ == '__main__':
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
 
-    to_test = 'place'
+    to_test = 'hang'
     interaction = interactions_data[interactions_data['interaction'] == to_test]
 
     tri_mesh_env = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_env'])
@@ -60,10 +61,14 @@ if __name__ == '__main__':
 
     agglomerator = Agglomerator(trainer)
 
+    max_distances = MaxDistancesCalculator(trainer, tri_mesh_obj)
+
     output_subdir = "IBSMesh_" + str(init_size_sampling) + "_" + str(resamplings)+ "_"
     output_subdir += sampler.__class__.__name__ + "_"+ str(rate_ibs_samples) + "_" + str(rate_generated_random_numbers)
 
-    Saver(affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj, output_subdir)
+
+
+    Saver(affordance_name, env_name, obj_name, agglomerator,max_distances, ibs_calculator, tri_mesh_obj, output_subdir)
 
     # VISUALIZATION
     provenance_vectors = trimesh.load_path(

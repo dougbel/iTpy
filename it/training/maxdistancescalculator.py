@@ -1,43 +1,45 @@
-import trimesh
-
-import numpy as np
 import open3d as o3d
 import pandas as pd
+import json
 
-from it import util
-from it.testing.results import Analyzer
 from it.training.sampler import *
 from it.training.trainer import Trainer
 
 
-class MaxDistance:
+class MaxDistancesCalculator:
 
-    def __init__(self, trainer, tri_mesh_obj):
+    def __init__(self, pv_points, pv_vectors, tri_mesh_obj):
         '''
-        This is a replic of method Trainer._get_max_distance_score but is presented here only to show the way of calculation
+        This is a replic of method Trainer._get_max_distance_score but is presented here only to show the way
+        of calculation
         :param trainer:
         :param tri_mesh_obj:
         '''
+        self.influence_radio, self.influence_center = util.influence_sphere(tri_mesh_obj)
 
-        ro, center = util.influence_sphere(tri_mesh_obj)
+        self.sphere_of_influence = trimesh.primitives.Sphere(radius=self.influence_radio,
+                                                             center=self.influence_center, subdivisions=5)
 
-        self.influence_sphere = trimesh.primitives.Sphere(radius=ro, center=center, subdivisions=5)
-
-        calculated_pv_end = trainer.pv_points + trainer.pv_vectors
+        self.expected_intersections = pv_points + pv_vectors
 
         # looking for the nearest ray intersections
         (__,
-         self.idx_ray,
-         self.intersections) = self.influence_sphere.ray.intersects_id(
-            ray_origins=trainer.pv_points,
-            ray_directions=trainer.pv_vectors,
+         idx_ray,
+         self.calculated_intersections) = self.sphere_of_influence.ray.intersects_id(
+            ray_origins=pv_points,
+            ray_directions=pv_vectors,
             return_locations=True,
             multiple_hits=False)
 
-        analyzer = Analyzer(self.idx_ray, self.intersections, 1, [ro], 1, calculated_pv_end)
+        self.max_distances = np.linalg.norm(self.calculated_intersections - self.expected_intersections, axis=1)
+        self.sum_max_distances = np.sum(self.max_distances)
 
-        self.all_max_distances, self.max_distance, missed = analyzer.measure_scores()
-
+    def get_info(self):
+        info = {}
+        info['obj_influence_radio'] = self.influence_radio
+        info['sum_max_distances'] = self.sum_max_distances
+        info['max_distances'] = self.max_distances.tolist()
+        return info
 
 
 if __name__ == '__main__':
@@ -57,22 +59,23 @@ if __name__ == '__main__':
 
     trainer_weighted = Trainer(tri_mesh_ibs_segmented, tri_mesh_env, sampler_ibs_srcs_weighted)
 
-    max_d = MaxDistance(trainer_weighted, tri_mesh_obj)
+    max_d = MaxDistancesCalculator(trainer_weighted.pv_points, trainer_weighted.pv_vectors, tri_mesh_obj)
 
-    print(max_d.max_distance)
+    print(max_d.sum_max_distances)
 
     pv_origin = trimesh.points.PointCloud(trainer_weighted.pv_points, color=[255, 0, 0, 255])
 
     tri_mesh_env.visual.face_colors = [100, 100, 100, 255]
     tri_mesh_obj.visual.face_colors = [0, 255, 0, 255]
     tri_mesh_ibs_segmented.visual.face_colors = [0, 0, 255, 100]
-    max_d.influence_sphere.visual.face_colors = [0, 0, 255, 25]
+    max_d.sphere_of_influence.visual.face_colors = [0, 0, 255, 25]
 
-    pv_3d_path = np.hstack((trainer_weighted.pv_points, trainer_weighted.pv_points + trainer_weighted.pv_vectors)).reshape(-1, 2, 3)
-    pv_max_path = np.hstack((trainer_weighted.pv_points, max_d.intersections)).reshape(-1, 2, 3)
+    pv_3d_path = np.hstack((trainer_weighted.pv_points,
+                            trainer_weighted.pv_points + trainer_weighted.pv_vectors)).reshape(-1, 2, 3)
+    pv_max_path = np.hstack((trainer_weighted.pv_points,
+                             max_d.calculated_intersections)).reshape(-1, 2, 3)
 
-    pv_intersections = trimesh.points.PointCloud(max_d.intersections, color=[0, 0, 255, 250])
-
+    pv_intersections = trimesh.points.PointCloud(max_d.calculated_intersections, color=[0, 0, 255, 250])
 
     provenance_vectors = trimesh.load_path(pv_3d_path)
     provenance_vectors_max_path = trimesh.load_path(pv_max_path)
@@ -90,7 +93,7 @@ if __name__ == '__main__':
         provenance_vectors_max_path,
         pv_origin,
         pv_intersections,
-        max_d.influence_sphere,
+        max_d.sphere_of_influence,
         tri_mesh_obj
     ])
     scene.show()

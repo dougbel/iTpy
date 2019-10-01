@@ -3,6 +3,10 @@ import pandas as pd
 
 import open3d as o3d
 import trimesh
+from scipy import linalg
+
+from transforms3d.derivations.eulerangles import z_rotation
+from transforms3d.affines import compose
 
 from it.training.sampler import *
 from it.training.trainer import Trainer
@@ -19,6 +23,10 @@ if __name__ == '__main__':
     tri_mesh_ibs_segmented = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_ibs_segmented'])
     np_cloud_env = np.asarray(o3d.io.read_point_cloud(interaction.iloc[0]['o3d_cloud_sources_ibs']).points)
 
+    tri_mesh_obj.visual.face_colors = [0, 255, 0, 255]
+    tri_mesh_env.visual.face_colors = [100, 100, 100, 255]
+    tri_mesh_ibs_segmented.visual.face_colors = [0, 0, 255, 100]
+
     rate_generated_random_numbers = 500
 
     sampler_ibs_srcs_weighted = OnGivenPointCloudWeightedSampler(np_cloud_env, rate_generated_random_numbers)
@@ -27,14 +35,43 @@ if __name__ == '__main__':
 
     agg = Agglomerator(trainer)
 
-    # VISUALIZATION
-    provenance_vectors = trimesh.load_path(
-        np.hstack((agg.agglomerated_pv_points, agg.agglomerated_pv_points + agg.agglomerated_pv_vectors)).reshape(-1, 2, 3))
+    angle = (2 * math.pi / agg.ORIENTATIONS)
 
-    pv_origin = trimesh.points.PointCloud(agg.agglomerated_pv_points, color=[0, 0, 255, 250])
 
-    scene = trimesh.Scene([
-        provenance_vectors,
-        pv_origin
-    ])
-    scene.show()
+    for ori in range(agg.ORIENTATIONS):
+        idx_from = ori * trainer.sampler.SAMPLE_SIZE
+        idx_to = idx_from + trainer.sampler.SAMPLE_SIZE
+
+        pv_origin = agg.agglomerated_pv_points[idx_from:idx_to]
+        pv_final = agg.agglomerated_pv_points[idx_from:idx_to] + agg.agglomerated_pv_vectors[idx_from:idx_to]
+
+        reference_ori = np.array([[0, 0, 0]])
+        reference_fin = np.array([[0.5, 0, 0]])
+
+        R = z_rotation(angle * ori)  # accumulated rotation in each iteration
+        Z = np.ones(3)  # zooms
+        T = [0, 0, 0]  # translation
+        A = compose(T, R, Z)
+
+        tri_mesh_obj.apply_transform(A)
+        tri_mesh_env.apply_transform(A)
+        reference_ori = np.dot(reference_ori, R.T) # np.mat(reference_ori)*np.mat(R)
+        reference_fin = np.dot(reference_fin, R.T) # np.mat(reference_ori)*np.mat(R)
+
+        # VISUALIZATION
+        tri_pv = trimesh.load_path(np.hstack((pv_origin, pv_final)).reshape(-1, 2, 3))
+        tri_pv_origin = trimesh.points.PointCloud(pv_origin, color=[0, 0, 255, 250])
+
+        reference = trimesh.load_path(np.hstack((reference_ori, reference_fin)).reshape(-1, 2, 3))
+
+        scene = trimesh.Scene([
+            tri_mesh_env,
+            tri_pv,
+            tri_pv_origin,
+            tri_mesh_obj,
+            reference
+        ])
+        scene.show()
+
+        tri_mesh_obj.apply_transform(linalg.inv(A))
+        tri_mesh_env.apply_transform(linalg.inv(A))

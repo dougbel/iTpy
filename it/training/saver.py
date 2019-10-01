@@ -12,7 +12,7 @@ class Saver:
     output_dir = os.path.join('.', 'output', 'descriptors_repository')
     directory = None
 
-    def __init__(self, affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj,
+    def __init__(self, affordance_name, env_name, obj_name, agglomerator, max_distances,  ibs_calculator, tri_mesh_obj,
                  output_subdir=None):
         if output_subdir is not None:
             self.output_dir = os.path.join(self.output_dir, output_subdir)
@@ -22,7 +22,7 @@ class Saver:
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
 
-        self._save_info(affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj)
+        self._save_info(affordance_name, env_name, obj_name, agglomerator, max_distances, ibs_calculator, tri_mesh_obj)
         self._save_agglomerated_it_descriptor(affordance_name, obj_name, agglomerator)
         self._save_meshes(affordance_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj)
 
@@ -57,17 +57,18 @@ class Saver:
         o3d.io.write_point_cloud(file_name_pattern + "_normals_env.pcd", pcd, write_ascii=True)
 
 
-    def _save_info(self, affordance_name, env_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj):
+    def _save_info(self, affordance_name, env_name, obj_name, agglomerator,max_distances, ibs_calculator, tri_mesh_obj):
         data = {}
         data['it_descriptor_version'] = 2.0
         data['affordance_name'] = affordance_name
         data['env_name'] = env_name
         data['obj_name'] = obj_name
-        data['obj_influence_radio'],__ = util.influence_sphere(tri_mesh_obj)
+        #data['obj_influence_radio'],__ = util.influence_sphere(tri_mesh_obj)
         data['sample_size'] = agglomerator.it_trainer.sampler.SAMPLE_SIZE
         data['orientations'] = agglomerator.ORIENTATIONS
         data['trainer'] = agglomerator.it_trainer.get_info()
         data['ibs_calculator'] = ibs_calculator.get_info()
+        data['max_distances'] = max_distances.get_info()
         # data['reference'] = {}
         # data['reference']['idxRefIBS'] = 8
         # data['reference']['refPointIBS'] = '8,8,8'
