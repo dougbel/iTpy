@@ -22,7 +22,7 @@ class Results:
 
 
 
-class Analizer:
+class Analyzer:
     results = None
 
     def __init__(self, idx_ray, calculated_intersections, num_it_to_test, influence_radius, num_orientations,

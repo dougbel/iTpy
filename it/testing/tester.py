@@ -6,7 +6,7 @@ import numpy as np
 from transforms3d.affines import compose
 
 from it.testing.deglomerator import Deglomerator
-from it.testing.results import Analizer, Results
+from it.testing.results import Analyzer, Results
 
 
 class Tester:
@@ -65,5 +65,5 @@ class Tester:
             return_locations=True,
             multiple_hits=False)
 
-        return Analizer(idx_ray, intersections, self.num_it_to_test, self.objs_influence_radios, self.num_orientations,
+        return Analyzer(idx_ray, intersections, self.num_it_to_test, self.objs_influence_radios, self.num_orientations,
                         self.compiled_pv_end)
