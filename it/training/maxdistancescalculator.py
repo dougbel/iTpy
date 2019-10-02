@@ -45,7 +45,7 @@ class MaxDistancesCalculator:
 if __name__ == '__main__':
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
 
-    to_test = 'hang'
+    to_test = 'ride'
     interaction = interactions_data[interactions_data['interaction'] == to_test]
 
     tri_mesh_env = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_env'])
@@ -58,7 +58,6 @@ if __name__ == '__main__':
     sampler_ibs_srcs_weighted = OnGivenPointCloudWeightedSampler(np_cloud_env, rate_generated_random_numbers)
 
     trainer_weighted = Trainer(tri_mesh_ibs_segmented, tri_mesh_env, sampler_ibs_srcs_weighted)
-
     max_d = MaxDistancesCalculator(trainer_weighted.pv_points, trainer_weighted.pv_vectors, tri_mesh_obj)
 
     print(max_d.sum_max_distances)
