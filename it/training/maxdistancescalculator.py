@@ -7,6 +7,8 @@ from it.training.trainer import Trainer
 
 
 class MaxDistancesCalculator:
+    #influence_radio
+    #sum_max_distances
 
     def __init__(self, pv_points, pv_vectors, tri_mesh_obj):
         '''
@@ -20,18 +22,18 @@ class MaxDistancesCalculator:
         self.sphere_of_influence = trimesh.primitives.Sphere(radius=self.influence_radio,
                                                              center=self.influence_center, subdivisions=5)
 
-        self.expected_intersections = pv_points + pv_vectors
+        expected_intersections = pv_points + pv_vectors
 
         # looking for the nearest ray intersections
         (__,
          idx_ray,
-         self.calculated_intersections) = self.sphere_of_influence.ray.intersects_id(
+         calculated_intersections) = self.sphere_of_influence.ray.intersects_id(
             ray_origins=pv_points,
             ray_directions=pv_vectors,
             return_locations=True,
             multiple_hits=False)
 
-        self.max_distances = np.linalg.norm(self.calculated_intersections - self.expected_intersections, axis=1)
+        self.max_distances = np.linalg.norm(calculated_intersections - expected_intersections, axis=1)
         self.sum_max_distances = np.sum(self.max_distances)
 
     def get_info(self):
@@ -43,6 +45,8 @@ class MaxDistancesCalculator:
 
 
 if __name__ == '__main__':
+    from sklearn import preprocessing
+
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
 
     to_test = 'ride'
@@ -71,10 +75,15 @@ if __name__ == '__main__':
 
     pv_3d_path = np.hstack((trainer_weighted.pv_points,
                             trainer_weighted.pv_points + trainer_weighted.pv_vectors)).reshape(-1, 2, 3)
-    pv_max_path = np.hstack((trainer_weighted.pv_points,
-                             max_d.calculated_intersections)).reshape(-1, 2, 3)
 
-    pv_intersections = trimesh.points.PointCloud(max_d.calculated_intersections, color=[0, 0, 255, 250])
+    #pv_normalized_vectors = preprocessing.normalize(trainer_weighted.pv_vectors)
+    pv_max_vectors = preprocessing.normalize(trainer_weighted.pv_vectors) * max_d.max_distances.reshape(-1, 1)
+    calculated_max_intersections = trainer_weighted.pv_points + pv_max_vectors
+
+    pv_max_path = np.hstack((trainer_weighted.pv_points,
+                             calculated_max_intersections)).reshape(-1, 2, 3)
+
+    pv_intersections = trimesh.points.PointCloud(calculated_max_intersections, color=[0, 0, 255, 250])
 
     provenance_vectors = trimesh.load_path(pv_3d_path)
     provenance_vectors_max_path = trimesh.load_path(pv_max_path)
@@ -86,7 +95,9 @@ if __name__ == '__main__':
         tri_mesh_obj,
         tri_mesh_env
     ])
-    scene.show()
+
+    scene.show(flags={'cull': False, 'wireframe':False, 'axis': False})
+
 
     scene = trimesh.Scene([
         provenance_vectors_max_path,
@@ -95,4 +106,4 @@ if __name__ == '__main__':
         max_d.sphere_of_influence,
         tri_mesh_obj
     ])
-    scene.show()
+    scene.show(flags={'cull': False})
