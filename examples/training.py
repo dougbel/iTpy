@@ -61,14 +61,13 @@ if __name__ == '__main__':
 
     agglomerator = Agglomerator(trainer)
 
-    max_distances = MaxDistancesCalculator(trainer, tri_mesh_obj)
+    max_distances = MaxDistancesCalculator(pv_points=trainer.pv_points, pv_vectors=trainer.pv_vectors,
+                                           tri_mesh_obj=tri_mesh_obj, consider_collision_with_object=True)
 
-    output_subdir = "IBSMesh_" + str(init_size_sampling) + "_" + str(resamplings)+ "_"
-    output_subdir += sampler.__class__.__name__ + "_"+ str(rate_ibs_samples) + "_" + str(rate_generated_random_numbers)
+    output_subdir = "IBSMesh_" + str(init_size_sampling) + "_" + str(resamplings) + "_"
+    output_subdir += sampler.__class__.__name__ + "_" + str(rate_ibs_samples) + "_" + str(rate_generated_random_numbers)
 
-
-
-    Saver(affordance_name, env_name, obj_name, agglomerator,max_distances, ibs_calculator, tri_mesh_obj, output_subdir)
+    Saver(affordance_name, env_name, obj_name, agglomerator, max_distances, ibs_calculator, tri_mesh_obj, output_subdir)
 
     # VISUALIZATION
     provenance_vectors = trimesh.load_path(
@@ -84,4 +83,4 @@ if __name__ == '__main__':
         tri_mesh_ibs_segmented,
         provenance_vectors
     ])
-    scene.show()
+    scene.show(flags={'cull': False, 'wireframe': False, 'axis': False})

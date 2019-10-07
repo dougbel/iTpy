@@ -72,8 +72,7 @@ if __name__ == '__main__':
         collision_tester.add_object(env_name, tri_mesh_env)
         collision_tester.add_object(obj_name, tri_mesh_obj)
 
-        in_collision, data = collision_tester.in_collision_single(
-            tri_mesh_ibs, return_data=True)
+        in_collision, data = collision_tester.in_collision_single(tri_mesh_ibs, return_data=True)
 
         # getting sampled point in environment and object used to generate the IBS surface
         np_env_sampled_points = ibs_calculator.points[: ibs_calculator.size_cloud_env]

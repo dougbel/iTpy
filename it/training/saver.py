@@ -25,6 +25,7 @@ class Saver:
         self._save_info(affordance_name, env_name, obj_name, agglomerator, max_distances, ibs_calculator, tri_mesh_obj)
         self._save_agglomerated_it_descriptor(affordance_name, obj_name, agglomerator)
         self._save_meshes(affordance_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj)
+        self._save_maxdistances(affordance_name, obj_name, max_distances);
 
     def _save_meshes(self, affordance_name, obj_name, agglomerator, ibs_calculator, tri_mesh_obj):
         file_name_pattern = os.path.join(self.directory, affordance_name + "_" + obj_name)
@@ -84,3 +85,7 @@ class Saver:
 
         with open(os.path.join(self.directory, affordance_name + '_' + obj_name + '.json'), 'w') as outfile:
             json.dump(data, outfile)
+
+    def _save_maxdistances(self,affordance_name, obj_name, max_distances):
+       output_file = os.path.join(self.directory, affordance_name + '_' + obj_name + '_maxdistances.txt')
+       np.savetxt( output_file,  max_distances.max_distances)
