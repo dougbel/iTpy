@@ -15,16 +15,16 @@ class Deglomerator:
         self.__readAgglomeratedDescriptor()
 
     def __read_definition(self):
-        self.__definition_file = self.__working_path + '/' + self.affordance_name + "_" + self.object_name + ".json"
-        with open(self.__definition_file) as jsonfile:
-            self.__definition = json.load(jsonfile)
-            self.num_orientations = int(self.__definition['orientations'])
-            self.sample_size = int(self.__definition['sample_size'])
-            self.influence_radio = self.__definition['obj_influence_radio']
+        self._definition_file = self.__working_path + '/' + self.affordance_name + "_" + self.object_name + ".json"
+        with open(self._definition_file) as jsonfile:
+            self._definition = json.load(jsonfile)
+            self.num_orientations = int(self._definition['orientations'])
+            self.sample_size = int(self._definition['sample_size'])
+            self.influence_radio = self._definition['max_distances']['obj_influence_radio']
 
     def __readAgglomeratedDescriptor(self):
         base_nameU = self.__working_path + "/UNew_" + self.affordance_name + "_" + self.object_name + "_descriptor_" + str(
-            self.__definition['orientations'])
+            self._definition['orientations'])
 
         self.pv_points = np.asarray(o3d.io.read_point_cloud(base_nameU + "_points.pcd").points)
         self.pv_vectors = np.asarray(o3d.io.read_point_cloud(base_nameU + "_vectors.pcd").points)

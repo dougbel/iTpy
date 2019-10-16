@@ -116,6 +116,11 @@ class Analyzer:
         return all_distances
 
     def _avoid_distances_farther_influence_radius(self, all_distances):
+        '''
+        Filters distances bigger than the maximum distance turning them in missing intersection (mat.nan)
+        :param all_distances: All measured distance of intersections in the direction of each provenance vector
+        :return: distances no bigger than the maximum distance measured with the influence sphere
+        '''
         filter_distances = np.copy(all_distances)
         # avoid consider distances farther than the influence radius
         pv_by_interaction = int(self.expected_intersections.shape[0] / self.num_it_to_test)

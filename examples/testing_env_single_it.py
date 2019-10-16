@@ -12,6 +12,7 @@ last_position = np.array([0, 0, 0])
 index = 0
 r = np.eye(3)  # rotation matrix
 z = np.ones(3)  # zooms
+MAX_SCORE_GOOD_POINT = 2 #REVIEW This parameter was setted only for place-bowl interaction
 
 
 def move_object(dynamic_scene):
@@ -111,7 +112,7 @@ def test_it(it_tester, environment, points_to_test):
         data_frame.loc[len(data_frame)] = [testing_point[0], testing_point[1], testing_point[2], score, missing, angle,
                                            orientation, calculation_time]
 
-        if score < 2:
+        if score < MAX_SCORE_GOOD_POINT:
             l_good_points.append(testing_point)
 
         current_percent = int(100 * idx / points_to_test.shape[0])
@@ -182,7 +183,7 @@ if __name__ == '__main__':
     o3d.io.write_point_cloud(output_dir + "/good_points.pcd", good_points_pcd)
     output = trimesh.points.PointCloud(np.asarray(good_points))
     scene = trimesh.Scene([tri_mesh_env, tri_mesh_obj, output])
-    scene.show()
+    scene.show(caption="Score < "+str(MAX_SCORE_GOOD_POINT))
 
     # collision test
     no_collision_pcd = o3d.geometry.PointCloud()
@@ -191,7 +192,7 @@ if __name__ == '__main__':
 
     output = trimesh.points.PointCloud(np.asarray(no_collision))
     scene = trimesh.Scene([tri_mesh_env, tri_mesh_obj, output])
-    scene.show()
+    scene.show(caption="No colission positions")
 
     # environment.show(callback=move_object)
 
