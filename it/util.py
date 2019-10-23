@@ -53,7 +53,6 @@ def slide_mesh_by_sphere(tri_mesh, sphere_center, sphere_ro, level=16):
 
 
 def extract_cloud_by_bounding_box(np_cloud, box_center, box_extension):
-
     max_x_plane = box_center[0] + box_extension
     min_x_plane = box_center[0] - box_extension
     max_y_plane = box_center[1] + box_extension
@@ -109,14 +108,17 @@ def get_edges(vertices, ridge_vertices, idx_extracted=None):
     return edges_from, edges_to
 
 
-def influence_sphere( tri_mesh_obj):
+def influence_sphere(tri_mesh_obj, ratio=2):
     '''
     Defines radio of influence of a given object
     :param tri_mesh_obj: Object to calculate sphere of influence
+    :param ratio: expansion of sphere of influence 1.1 means 110%, 2 mean 200% (ro is as long as the
+    diagonal of the bounding box of the object)
     :return: center and ro parameter of the sphere of influence
     '''
     obj_min_bound = np.asarray(tri_mesh_obj.vertices).min(axis=0)
     obj_max_bound = np.asarray(tri_mesh_obj.vertices).max(axis=0)
-    sphere_ro = np.linalg.norm(obj_max_bound - obj_min_bound)
     sphere_center = np.asarray(obj_max_bound + obj_min_bound) / 2
+    sphere_ro = np.linalg.norm(obj_max_bound - sphere_center) * ratio
+
     return sphere_ro, sphere_center

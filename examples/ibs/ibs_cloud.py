@@ -25,12 +25,9 @@ if __name__ == '__main__':
     print(end - start, " seconds on IBS calculation (2,000 points)")  # timing execution
 
     # ### VISUALIZATION
-    mesh_obj_o3d = o3d.io.read_triangle_mesh("./data/interactions/table_bowl/bowl.ply")
-    obj_min_bound = mesh_obj_o3d.get_min_bound()
-    obj_max_bound = mesh_obj_o3d.get_max_bound()
 
-    radio = np.linalg.norm(obj_max_bound - obj_min_bound)
-    np_pivot = np.asarray(obj_max_bound + obj_min_bound) / 2
+    tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
+    radio, np_pivot = util.influence_sphere(tri_mesh_obj)
 
     [idx_extracted, np_ibs_vertices_extracted] = util.extract_cloud_by_sphere(ibs_calculator.vertices, np_pivot, radio)
 
@@ -65,12 +62,9 @@ if __name__ == '__main__':
     print(end - start, " seconds on IBS calculation (20,000 points)")  # timing execution
 
     # ### VISUALIZATION
-    mesh_obj_o3d = o3d.io.read_triangle_mesh("./data/interactions/table_bowl/bowl.ply")
-    obj_min_bound = mesh_obj_o3d.get_min_bound()
-    obj_max_bound = mesh_obj_o3d.get_max_bound()
 
-    radio = np.linalg.norm(obj_max_bound - obj_min_bound)
-    np_pivot = np.asarray(obj_max_bound + obj_min_bound) / 2
+    tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
+    radio, np_pivot = util.influence_sphere(tri_mesh_obj)
 
     [idx_extracted, np_ibs_vertices_extracted] = util.extract_cloud_by_sphere(ibs_calculator.vertices, np_pivot, radio)
 

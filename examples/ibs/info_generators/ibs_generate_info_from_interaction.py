@@ -32,19 +32,14 @@ if __name__ == '__main__':
 
     tri_mesh_obj = trimesh.load_mesh(obj_file_mesh)
 
-    obj_min_bound = np.asarray(tri_mesh_obj.vertices).min(axis=0)
-    obj_max_bound = np.asarray(tri_mesh_obj.vertices).max(axis=0)
-
     tri_mesh_env = trimesh.load_mesh(env_file_mesh)
 
-    extension = np.linalg.norm(obj_max_bound - obj_min_bound)
-    middle_point = (obj_max_bound + obj_min_bound) / 2
+    extension, middle_point = util.influence_sphere(tri_mesh_obj)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
     # calculating cropping sphere parameters
-    radio = np.linalg.norm(obj_max_bound - obj_min_bound)
-    np_pivot = np.asarray(obj_max_bound + obj_min_bound) / 2
+    radio, np_pivot = util.influence_sphere(tri_mesh_obj)
 
     # execution parameters
     improve_by_collission = True

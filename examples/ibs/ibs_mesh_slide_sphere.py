@@ -9,13 +9,9 @@ from it.training.ibs import IBSMesh
 if __name__ == '__main__':
     tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
 
-    obj_min_bound = np.asarray(tri_mesh_obj.vertices).min(axis=0)
-    obj_max_bound = np.asarray(tri_mesh_obj.vertices).max(axis=0)
-
     tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
 
-    extension = np.linalg.norm(obj_max_bound - obj_min_bound)
-    middle_point = (obj_max_bound + obj_min_bound) / 2
+    extension, middle_point = util.influence_sphere(tri_mesh_obj)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
@@ -33,8 +29,7 @@ if __name__ == '__main__':
     tri_mesh_ibs = ibs_calculator.get_trimesh()
     # tri_mesh_ibs = tri_mesh_ibs.subdivide()
 
-    sphere_ro = np.linalg.norm(obj_max_bound - obj_min_bound)
-    sphere_center = np.asarray(obj_max_bound + obj_min_bound) / 2
+    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj)
 
     tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro, 16)
 

@@ -21,11 +21,7 @@ if __name__ == '__main__':
     tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
     tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
 
-    obj_min_bound = np.asarray(tri_mesh_obj.vertices).min(axis=0)
-    obj_max_bound = np.asarray(tri_mesh_obj.vertices).max(axis=0)
-
-    extension = np.linalg.norm(obj_max_bound - obj_min_bound)
-    middle_point = (obj_max_bound + obj_min_bound) / 2
+    extension, middle_point = util.influence_sphere(tri_mesh_obj)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
@@ -53,8 +49,7 @@ if __name__ == '__main__':
               size_env_sampled_points, " final_obj_points: ", size_obj_sampled_points)
 
         # extracting point no farther than the principal sphere
-        radio = np.linalg.norm(obj_max_bound - obj_min_bound)
-        np_pivot = np.asarray(obj_max_bound + obj_min_bound) / 2
+        radio, np_pivot = util.influence_sphere(tri_mesh_obj)
 
         [idx_extracted, np_ibs_vertices_extracted] = util.extract_cloud_by_sphere(ibs_calculator.vertices, np_pivot,
                                                                                   radio)
