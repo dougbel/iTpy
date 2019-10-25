@@ -108,17 +108,17 @@ def get_edges(vertices, ridge_vertices, idx_extracted=None):
     return edges_from, edges_to
 
 
-def influence_sphere(tri_mesh_obj, ratio=2):
+def influence_sphere(tri_mesh_obj, radio_ratio=2):
     '''
     Defines radio of influence of a given object
     :param tri_mesh_obj: Object to calculate sphere of influence
-    :param ratio: expansion of sphere of influence 1.1 means 110%, 2 mean 200% (ro is as long as the
+    :param radio_ratio: expansion of sphere of influence 1.1 means 110%, 2 mean 200% (ro is as long as the
     diagonal of the bounding box of the object)
     :return: center and ro parameter of the sphere of influence
     '''
     obj_min_bound = np.asarray(tri_mesh_obj.vertices).min(axis=0)
     obj_max_bound = np.asarray(tri_mesh_obj.vertices).max(axis=0)
     sphere_center = np.asarray(obj_max_bound + obj_min_bound) / 2
-    sphere_ro = np.linalg.norm(obj_max_bound - sphere_center) * ratio
+    sphere_ro = np.linalg.norm(obj_max_bound - sphere_center) * radio_ratio
 
     return sphere_ro, sphere_center

@@ -5,7 +5,7 @@ import trimesh
 from it.testing.deglomerator import Deglomerator
 
 if __name__ == '__main__':
-    tests = Deglomerator("./data/it/Hang", "Hang", "umbrella")
+    tests = Deglomerator("./data/it/IBSMesh_400_4_OnGivenPointCloudWeightedSampler_5_500/hang", "hang", "umbrella")
     print(tests.pv_points)
 
     # VISUALIZATION

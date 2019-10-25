@@ -9,9 +9,13 @@ import it.util as util
 from it.training.ibs import IBS
 
 if __name__ == '__main__':
+    '''
+    Generates information to establish the correlation between IBS calculation time and point clouds sampling density.
+    Using point cloud to create an IBS which no pierces surfaces requires a high-density point sampling, 
+    thereon generate it is highly time-consuming.
+    '''
 
     tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
-
     tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table_segmented.ply')
 
     samples = []

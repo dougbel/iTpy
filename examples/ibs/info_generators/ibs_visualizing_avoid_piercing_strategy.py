@@ -14,6 +14,12 @@ def get_camera(scene):
 
 
 if __name__ == '__main__':
+    '''
+    Generates information of the calculated IBS using meshes. Developed strategies for sampling on the object and 
+    environment surfaces allow that IBS avoids pierce them.     
+    '''
+
+    influence_radio_ratio = 2
 
     env = "table"
     obj = "bowl"
@@ -21,7 +27,7 @@ if __name__ == '__main__':
     tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
     tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
 
-    extension, middle_point = util.influence_sphere(tri_mesh_obj)
+    extension, middle_point = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
@@ -49,7 +55,7 @@ if __name__ == '__main__':
               size_env_sampled_points, " final_obj_points: ", size_obj_sampled_points)
 
         # extracting point no farther than the principal sphere
-        radio, np_pivot = util.influence_sphere(tri_mesh_obj)
+        radio, np_pivot = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
         [idx_extracted, np_ibs_vertices_extracted] = util.extract_cloud_by_sphere(ibs_calculator.vertices, np_pivot,
                                                                                   radio)

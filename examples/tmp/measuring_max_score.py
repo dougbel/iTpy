@@ -24,10 +24,13 @@ if __name__ == '__main__':
     # testing_point = [-2.8, 1., 0.00362764]  # half inside the scene, half outside
 
     testing_point = [0,0,0]
+
+    influence_radio_ratio = 1.0
+
     # visualizing
     tri_mesh_object_file = tester.objs_filenames[0]
     tri_mesh_obj = trimesh.load_mesh(tri_mesh_object_file, process=False)
-    ro, center = util.influence_sphere(tri_mesh_obj)
+    ro, center = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     influence_sphere = trimesh.primitives.Sphere(radius=ro, center=center, subdivisions=5)
 

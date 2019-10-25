@@ -7,6 +7,7 @@ import os
 import open3d as o3d
 import trimesh
 
+from it import util
 from it.training.trainer import Trainer
 from it.training.sampler import PoissonDiscWeightedSampler
 
@@ -40,11 +41,19 @@ if __name__ == '__main__':
         for index_label, row_series in to_test.iterrows():
             env = to_test.at[index_label, 'env']
             obj = to_test.at[index_label, 'obj']
-            tri_mesh_env = trimesh.load_mesh(to_test.at[index_label, 'tri_mesh_env'])
-            tri_mesh_obj = trimesh.load_mesh(to_test.at[index_label, 'tri_mesh_obj'])
-            tri_mesh_ibs_segmented = trimesh.load_mesh(to_test.at[index_label, 'tri_mesh_ibs_segmented'])
-            o3d_cloud_sources_ibs = o3d.io.read_point_cloud(to_test.at[index_label, 'o3d_cloud_sources_ibs'])
+            directory = to_test.at[index_label, 'directory']
+            tri_mesh_env = trimesh.load_mesh(os.path.join(directory, to_test.at[index_label, 'tri_mesh_env']))
+            tri_mesh_obj = trimesh.load_mesh(os.path.join(directory, to_test.at[index_label, 'tri_mesh_obj']))
+
+            o3d_cloud_sources_ibs = o3d.io.read_point_cloud(
+                os.path.join(directory, to_test.at[index_label, 'o3d_cloud_sources_ibs']))
             np_cloud_env = np.asarray(o3d_cloud_sources_ibs.points)
+
+            tri_mesh_ibs = trimesh.load_mesh(os.path.join(directory,to_test.at[index_label, 'tri_mesh_ibs']))
+
+            influence_radio_ratio = 1.2
+            sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj, influence_radio_ratio)
+            tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro)
 
             for rate_r in range(2, 40, 2):
 

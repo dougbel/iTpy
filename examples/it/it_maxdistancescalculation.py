@@ -1,24 +1,32 @@
+import os
 import numpy as np
 import open3d as o3d
 import pandas as pd
 import trimesh
 from sklearn import preprocessing
 
+from it import util
 from it.training.maxdistancescalculator import MaxDistancesCalculator
 from it.training.sampler import OnGivenPointCloudWeightedSampler
 from it.training.trainer import Trainer
 
 if __name__ == '__main__':
-
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
 
     to_test = 'ride'
     interaction = interactions_data[interactions_data['interaction'] == to_test]
 
-    tri_mesh_env = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_env'])
-    tri_mesh_obj = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_obj'])
-    tri_mesh_ibs_segmented = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_ibs_segmented'])
-    np_cloud_env = np.asarray(o3d.io.read_point_cloud(interaction.iloc[0]['o3d_cloud_sources_ibs']).points)
+    directory = interaction.iloc[0]['directory']
+
+    tri_mesh_env = trimesh.load_mesh(os.path.join(directory, interaction.iloc[0]['tri_mesh_env']))
+    tri_mesh_obj = trimesh.load_mesh(os.path.join(directory, interaction.iloc[0]['tri_mesh_obj']))
+    tri_mesh_ibs = trimesh.load_mesh(os.path.join(directory, interaction.iloc[0]['tri_mesh_ibs']))
+    o3d_cloud_src_ibs = o3d.io.read_point_cloud(os.path.join(directory, interaction.iloc[0]['o3d_cloud_sources_ibs']))
+    np_cloud_env = np.asarray(o3d_cloud_src_ibs.points)
+
+    influence_radio_ratio = 1.2
+    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
+    tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro)
 
     rate_generated_random_numbers = 500
 
@@ -26,7 +34,8 @@ if __name__ == '__main__':
 
     trainer_weighted = Trainer(tri_mesh_ibs_segmented, tri_mesh_env, sampler_ibs_srcs_weighted)
     max_d = MaxDistancesCalculator(pv_points=trainer_weighted.pv_points, pv_vectors=trainer_weighted.pv_vectors,
-                                   tri_mesh_obj=tri_mesh_obj, consider_collision_with_object=True)
+                                   tri_mesh_obj=tri_mesh_obj, consider_collision_with_object=True,
+                                   radio_ratio=influence_radio_ratio)
 
     print(max_d.sum_max_distances)
 

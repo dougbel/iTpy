@@ -61,6 +61,9 @@ def save_output(scene, output_dir, file_name):
 
 
 if __name__ == '__main__':
+    '''
+    Generate, visualize and save outputs of implemented sampling strategies 
+    '''
 
     output_dir = './output/pv_selection_options/'
     if not os.path.exists(output_dir):
@@ -76,11 +79,19 @@ if __name__ == '__main__':
     for index_label, row_series in to_test.iterrows():
         env = to_test.at[index_label, 'env']
         obj = to_test.at[index_label, 'obj']
-        tri_mesh_env = trimesh.load_mesh(to_test.at[index_label, 'tri_mesh_env'])
-        tri_mesh_obj = trimesh.load_mesh(to_test.at[index_label, 'tri_mesh_obj'])
-        tri_mesh_ibs_segmented = trimesh.load_mesh(to_test.at[index_label, 'tri_mesh_ibs_segmented'])
-        o3d_cloud_sources_ibs = o3d.io.read_point_cloud(to_test.at[index_label, 'o3d_cloud_sources_ibs'])
+        directory = to_test.at[index_label, 'directory']
+        tri_mesh_env = trimesh.load_mesh(os.path.join(directory, to_test.at[index_label, 'tri_mesh_env']))
+        tri_mesh_obj = trimesh.load_mesh(os.path.join(directory, to_test.at[index_label, 'tri_mesh_obj']))
+
+        o3d_cloud_sources_ibs = o3d.io.read_point_cloud(
+            os.path.join(directory, to_test.at[index_label, 'o3d_cloud_sources_ibs']))
         np_cloud_env = np.asarray(o3d_cloud_sources_ibs.points)
+
+        tri_mesh_ibs = trimesh.load_mesh(os.path.join(directory, to_test.at[index_label, 'tri_mesh_ibs']))
+
+        influence_radio_ratio = 1.2
+        sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj, influence_radio_ratio)
+        tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro)
 
         rate_ibs_samples = 25
         rate_generated_random_numbers = 500
@@ -104,7 +115,7 @@ if __name__ == '__main__':
         print("POISSON DISC SAMPLING ON IBS SURFACE - CHOSEN RANDOMLY")
         visualize(sampler_poissondisc_random, tri_mesh_obj)
         # scene = generate_scene(sampler_poissondisc_random, tri_mesh_obj)
-        file_name = env + "_" + obj + "_ibs_poisson_sampling-chosen_randomlyuniform"
+        #file_name = env + "_" + obj + "_ibs_poisson_sampling-chosen_randomlyuniform"
         # # save_output(scene, output_dir, file_name)
 
         # #### WEIGHTED
@@ -124,7 +135,7 @@ if __name__ == '__main__':
         print("POISSON DISC SAMPLING ON IBS SURFACE - CHOSEN BY WEIGTHS")
         visualize(sampler_poissondisc_weighted, tri_mesh_obj)
         # scene = generate_scene(sampler_poissondisc_weighted, tri_mesh_obj)
-        file_name = env + "_" + obj + "_ibs_poisson_sampling-chosen_weights"
+        #file_name = env + "_" + obj + "_ibs_poisson_sampling-chosen_weights"
         # save_output(scene, output_dir, file_name)
 
         # ##############################################################################################################
@@ -146,7 +157,7 @@ if __name__ == '__main__':
         print("SAMPLING ON IBS SURFACE VERTICES - CHOSEN RANDOMLY")
         visualize(sampler_meshvertices_random, tri_mesh_obj)
         # scene = generate_scene(sampler_meshvertices_random, tri_mesh_obj)
-        file_name = env + "_" + obj + "_ibs_vertices_sampling-chosen_randomlyuniform"
+        #file_name = env + "_" + obj + "_ibs_vertices_sampling-chosen_randomlyuniform"
         # save_output(scene, output_dir, file_name)
 
         # #### WEIGHTED
@@ -166,7 +177,7 @@ if __name__ == '__main__':
         print("SAMPLING ON IBS SURFACE VERTICES - CHOSEN BY WEIGTHS")
         visualize(sampler_ibs_vertices_weighted, tri_mesh_obj)
         # scene = generate_scene(sampler_ibs_vertices_weighted, tri_mesh_obj)
-        file_name = env + "_" + obj + "_ibs_vertices_sampling-chosen_weights"
+        #file_name = env + "_" + obj + "_ibs_vertices_sampling-chosen_weights"
         # save_output(scene, output_dir, file_name)
 
         # ##############################################################################################################
@@ -188,7 +199,7 @@ if __name__ == '__main__':
         print("SAMPLING ON POINTS THAT GENERATE THE IBS - CHOSEN BY RANDOMLY")
         visualize(sampler_ibs_srcs_randomly, tri_mesh_obj)
         # scene = generate_scene(sampler_ibs_srcs_randomly, tri_mesh_obj)
-        file_name = env + "_" + obj + "_ibs_srcs_sampling-chosen_randomlyuniform"
+        #file_name = env + "_" + obj + "_ibs_srcs_sampling-chosen_randomlyuniform"
         # save_output(scene, output_dir, file_name)
 
         # #### WEIGHTED
@@ -208,7 +219,7 @@ if __name__ == '__main__':
         print("SAMPLING ON POINTS THAT GENERATE THE IBS - CHOSEN BY WEIGTHS")
         visualize(sampler_ibs_srcs_weighted, tri_mesh_obj)
         # scene = generate_scene(sampler_ibs_srcs_weighted, tri_mesh_obj)
-        file_name = env + "_" + obj + "_ibs_srcs_sampling-chosen_weights"
+        #file_name = env + "_" + obj + "_ibs_srcs_sampling-chosen_weights"
         # save_output(scene, output_dir, file_name)
 
     filename = "%soutput_info.csv" % output_dir

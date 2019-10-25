@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 
@@ -18,10 +19,17 @@ if __name__ == '__main__':
     to_test = 'hang'
     interaction = interactions_data[interactions_data['interaction'] == to_test]
 
-    tri_mesh_env = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_env'])
-    tri_mesh_obj = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_obj'])
-    tri_mesh_ibs_segmented = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_ibs_segmented'])
-    np_cloud_env = np.asarray(o3d.io.read_point_cloud(interaction.iloc[0]['o3d_cloud_sources_ibs']).points)
+    directory = interaction.iloc[0]['directory']
+
+    tri_mesh_env = trimesh.load_mesh(os.path.join(directory, interaction.iloc[0]['tri_mesh_env']))
+    tri_mesh_obj = trimesh.load_mesh(os.path.join(directory, interaction.iloc[0]['tri_mesh_obj']))
+    tri_mesh_ibs = trimesh.load_mesh(os.path.join(directory, interaction.iloc[0]['tri_mesh_ibs']))
+    o3d_cloud_src_ibs = o3d.io.read_point_cloud(os.path.join(directory, interaction.iloc[0]['o3d_cloud_sources_ibs']))
+    np_cloud_env = np.asarray(o3d_cloud_src_ibs.points)
+
+    influence_radio_ratio = 1.2
+    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
+    tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro)
 
     tri_mesh_obj.visual.face_colors = [0, 255, 0, 255]
     tri_mesh_env.visual.face_colors = [100, 100, 100, 255]

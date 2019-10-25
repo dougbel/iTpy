@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 from it.training.maxdistancescalculator import MaxDistancesCalculator
@@ -10,16 +11,19 @@ from it.training.saver import Saver
 if __name__ == '__main__':
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
 
-    to_test = 'hang'
+    to_test = 'ride'
     interaction = interactions_data[interactions_data['interaction'] == to_test]
 
-    tri_mesh_env = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_env'])
-    tri_mesh_obj = trimesh.load_mesh(interaction.iloc[0]['tri_mesh_obj'])
+    directory = interaction.iloc[0]['directory']
+
+    tri_mesh_env = trimesh.load_mesh(os.path.join(directory, interaction.iloc[0]['tri_mesh_env']))
+    tri_mesh_obj = trimesh.load_mesh(os.path.join(directory, interaction.iloc[0]['tri_mesh_obj']))
     obj_name = interaction.iloc[0]['obj']
     env_name = interaction.iloc[0]['env']
     affordance_name = interaction.iloc[0]['interaction']
 
-    extension, middle_point =util.influence_sphere(tri_mesh_obj)
+    influence_radio_ratio = 1.5
+    extension, middle_point = util.influence_sphere(tri_mesh_obj, influence_radio_ratio)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
@@ -33,10 +37,12 @@ if __name__ == '__main__':
     # GENERATING AND SEGMENTING IBS MESH
     ################################
 
+    influence_radio_ratio = 1.2
+
     tri_mesh_ibs = ibs_calculator.get_trimesh()
     # tri_mesh_ibs = tri_mesh_ibs.subdivide()
 
-    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj)
+    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj, influence_radio_ratio)
 
     tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro)
 
@@ -57,7 +63,8 @@ if __name__ == '__main__':
     agglomerator = Agglomerator(trainer)
 
     max_distances = MaxDistancesCalculator(pv_points=trainer.pv_points, pv_vectors=trainer.pv_vectors,
-                                           tri_mesh_obj=tri_mesh_obj, consider_collision_with_object=True)
+                                           tri_mesh_obj=tri_mesh_obj, consider_collision_with_object=True,
+                                           radio_ratio=influence_radio_ratio)
 
     output_subdir = "IBSMesh_" + str(init_size_sampling) + "_" + str(resamplings) + "_"
     output_subdir += sampler.__class__.__name__ + "_" + str(rate_ibs_samples) + "_" + str(rate_generated_random_numbers)

@@ -7,11 +7,16 @@ import it.util as util
 from it.training.ibs import IBSMesh
 
 if __name__ == '__main__':
-    tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
+    '''
+    Shows the execution of the IBS calculator, using meshes and the developed sampling strategies.  This execution also 
+    shows some characteristics of the surface (winding consistency, convexity and watertighty)
+    '''
 
+    influence_radio_ratio = 2
+    tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
     tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
 
-    extension, middle_point = util.influence_sphere(tri_mesh_obj)
+    extension, middle_point = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
@@ -29,7 +34,7 @@ if __name__ == '__main__':
     tri_mesh_ibs = ibs_calculator.get_trimesh()
     # tri_mesh_ibs = tri_mesh_ibs.subdivide()
 
-    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj)
+    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro, 16)
 
@@ -52,11 +57,11 @@ if __name__ == '__main__':
     tri_mesh_ibs_segmented.visual.face_colors = [0, 0, 150, 100]
     tri_mesh_ibs.visual.face_colors = [0, 0, 150, 100]
 
-    visualizer3 = trimesh.Scene([
+    visualizer = trimesh.Scene([
         tri_mesh_env,
         tri_mesh_obj,
         tri_mesh_ibs_segmented
     ])
 
     # display the environment with callback
-    visualizer3.show()
+    visualizer.show(flags={'cull': False, 'wireframe': False, 'axis': False})

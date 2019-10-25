@@ -10,46 +10,46 @@ import it.util as util
 from it.training.ibs import IBSMesh
 
 if __name__ == '__main__':
+    '''
+    Test, generate and store IBS generated with different parameters. 
+    The parameter influence_radio_ratio is established to 2 in order to crop surfaces and keep most information of IBS 
+    to observe. 
+    '''
 
-    '''env_file_mesh = "./data/interactions/table_bowl/table.ply"
-    obj_file_mesh = "./data/interactions/table_bowl/bowl.ply"
-    env_name = "table"
-    obj_name = "bowl"'''
+    interactions_data = pd.read_csv("./data/interactions/interaction.csv")
+    to_test = 'ride'
+    interaction = interactions_data[interactions_data['interaction'] == to_test]
 
-    env_file_mesh = "./data/interactions/hanging-rack_umbrella/hanging-rack.ply"
-    obj_file_mesh = "./data/interactions/hanging-rack_umbrella/umbrella.ply"
-    env_name = "hanging-rack"
-    obj_name = "umbrella"
+    tri_mesh_env = trimesh.load_mesh(
+        os.path.join(interaction.iloc[0]['directory'], interaction.iloc[0]['tri_mesh_env']))
+    tri_mesh_obj = trimesh.load_mesh(
+        os.path.join(interaction.iloc[0]['directory'], interaction.iloc[0]['tri_mesh_obj']))
+    obj_name = interaction.iloc[0]['obj']
+    env_name = interaction.iloc[0]['env']
 
-    '''env_file_mesh = "./data/interactions/motorbike_rider/motorbike.ply"
-    obj_file_mesh = "./data/interactions/motorbike_rider/biker.ply"
-    env_name = "motorbike"
-    obj_name = "biker"'''
+    influence_radio_ratio = 2
 
-    output_dir = './output/ibs_generate_info_from_interaction/' + env_name + '_' + obj_name + '/'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    tri_mesh_obj = trimesh.load_mesh(obj_file_mesh)
-
-    tri_mesh_env = trimesh.load_mesh(env_file_mesh)
-
-    extension, middle_point = util.influence_sphere(tri_mesh_obj)
+    extension, middle_point = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
     # calculating cropping sphere parameters
-    radio, np_pivot = util.influence_sphere(tri_mesh_obj)
+    radio, np_pivot = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     # execution parameters
     improve_by_collission = True
     in_collision = True
     resamplings = 2
-    original_sample_size = sampled_points = 600
+    original_sample_size = 600
+    sampled_points = 600
 
     data_frame = pd.DataFrame(columns=['obj_sample', 'env_sample', 'resamplings', 'improved_by_collision',
                                        'obj_resampling', 'env_resampling', 'exec_time', 'in_collision',
                                        'collision_points'])
+
+    output_dir = './output/ibs_generate_info_from_interaction/' + env_name + '_' + obj_name + '/'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     while in_collision:
         start = time.time()  # timing execution
@@ -87,7 +87,10 @@ if __name__ == '__main__':
 
         filename = "%sibs_%s_%s_sampled_%d_resamplings_%d.ply" % (
             output_dir, env_name, obj_name, sampled_points, resamplings)
-        tri_mesh_ibs_segmented.export(filename, "ply")
+        tri_mesh_ibs.export(filename, "ply")
+        filename = "%sibs_segmented_%s_%s_sampled_%d_resamplings_%d.ply" % (
+            output_dir, env_name, obj_name, sampled_points, resamplings)
+        tri_mesh_ibs.export(filename, "ply")
 
         filename = "%sibs_%s_%s_output_info.csv" % (
             output_dir, env_name, obj_name)
@@ -128,7 +131,7 @@ if __name__ == '__main__':
         tri_mesh_ibs_segmented
     ])
     # display the environment with callback
-    visualizer2.show()
+    visualizer2.show(flags={'cull': False})
 
     # VISUALIZATION REAL SOURCED POINTS
     used_points = np.unique(np.asarray(ibs_calculator.ridge_points))
@@ -147,4 +150,4 @@ if __name__ == '__main__':
         tri_mesh_ibs_segmented
     ])
     # display the environment with callback
-    visualizer2.show()
+    visualizer2.show(flags={'cull': False})

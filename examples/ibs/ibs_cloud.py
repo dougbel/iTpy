@@ -9,6 +9,12 @@ import it.util as util
 from it.training.ibs import IBS
 
 if __name__ == '__main__':
+    '''
+    Shows the IBS calculated using point clouds. Due to inadequate sampling, IBS pierce in object and 
+    environment boundaries. It seems that even with high-density sampling penetrations are presented.     
+    '''
+    influence_radio_ratio = 2
+
     ################################################################################################
     # ##   1.  EXECUTION WITH 1,000 POINTS IN OBJECT AND ENVIRONMENT RESPECTIVELY
     ################################################################################################
@@ -27,7 +33,7 @@ if __name__ == '__main__':
     # ### VISUALIZATION
 
     tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
-    radio, np_pivot = util.influence_sphere(tri_mesh_obj)
+    radio, np_pivot = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     [idx_extracted, np_ibs_vertices_extracted] = util.extract_cloud_by_sphere(ibs_calculator.vertices, np_pivot, radio)
 
@@ -64,7 +70,7 @@ if __name__ == '__main__':
     # ### VISUALIZATION
 
     tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
-    radio, np_pivot = util.influence_sphere(tri_mesh_obj)
+    radio, np_pivot = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     [idx_extracted, np_ibs_vertices_extracted] = util.extract_cloud_by_sphere(ibs_calculator.vertices, np_pivot, radio)
 

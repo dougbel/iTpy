@@ -9,7 +9,7 @@ class MaxDistancesCalculator:
     # influence_radio
     # sum_max_distances
 
-    def __init__(self, pv_points, pv_vectors, tri_mesh_obj, consider_collision_with_object):
+    def __init__(self, pv_points, pv_vectors, tri_mesh_obj, consider_collision_with_object, radio_ratio = 2):
         '''
         Measures the max reachable distance of provenances vectors in a interaction
         :param pv_points: IBS key points, origin of provenance vectors
@@ -18,7 +18,8 @@ class MaxDistancesCalculator:
         :param consider_collision_with_object: consider collision with object to determine ray intersections
         '''
         self.consider_collision_with_object = consider_collision_with_object
-        self.influence_radio, self.influence_center = util.influence_sphere(tri_mesh_obj)
+        self.radio_ratio = radio_ratio
+        self.influence_radio, self.influence_center = util.influence_sphere(tri_mesh_obj, radio_ratio)
 
         self.sphere_of_influence = trimesh.primitives.Sphere(radius=self.influence_radio,
                                                              center=self.influence_center, subdivisions=5)
@@ -45,6 +46,7 @@ class MaxDistancesCalculator:
 
     def get_info(self):
         info = {}
+        info['radio_ratio'] = self.radio_ratio
         info['obj_influence_radio'] = self.influence_radio
         info['sum_max_distances'] = self.sum_max_distances
         info['consider_collision_with_object'] = self.consider_collision_with_object
