@@ -40,14 +40,21 @@ def slide_mesh_by_sphere(tri_mesh, sphere_center, sphere_ro, level=16):
     output_mesh = trimesh.Trimesh(vertices=tri_mesh.vertices,
                                   faces=tri_mesh.faces,
                                   process=False)
+    points_on_sphere = []
+    normals = []
     for theta in angle:
         for phi in angle:
-            sphere_point = np.array([sphere_ro * math.cos(theta) * math.sin(phi),
-                                     sphere_ro * math.sin(theta) * math.sin(phi),
-                                     sphere_ro * math.cos(phi)])
-            plane_origin = sphere_point + sphere_center
-            plane_normal = sphere_center - sphere_point
-            output_mesh = output_mesh.slice_plane(plane_normal=plane_normal, plane_origin=plane_origin)
+            point = np.array([sphere_ro * math.cos(theta) * math.sin(phi),
+                            sphere_ro * math.sin(theta) * math.sin(phi),
+                            sphere_ro * math.cos(phi)])
+
+            sphere_point = point + sphere_center
+            points_on_sphere.append(sphere_point)
+            normals.append( sphere_center - sphere_point )
+
+    points_on_sphere,idxs = np.unique( np.asarray(points_on_sphere).reshape(-1, 3), return_index=True, axis=0)
+    normals = (np.asarray(normals).reshape(-1, 3))[idxs]
+    output_mesh = output_mesh.slice_plane(plane_normal=normals, plane_origin=points_on_sphere)
 
     return output_mesh
 
@@ -108,7 +115,7 @@ def get_edges(vertices, ridge_vertices, idx_extracted=None):
     return edges_from, edges_to
 
 
-def influence_sphere(tri_mesh_obj, radio_ratio=2):
+def influence_sphere(tri_mesh_obj, radio_ratio=1.5):
     '''
     Defines radio of influence of a given object
     :param tri_mesh_obj: Object to calculate sphere of influence
