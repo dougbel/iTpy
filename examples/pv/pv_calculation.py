@@ -41,7 +41,7 @@ if __name__ == '__main__':
     '''
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
 
-    to_test = 'hang'
+    to_test = 'place'
     interaction = interactions_data[interactions_data['interaction'] == to_test]
 
     directory = interaction.iloc[0]['directory']

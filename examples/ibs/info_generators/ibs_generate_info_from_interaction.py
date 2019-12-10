@@ -9,38 +9,41 @@ import open3d as o3d
 import it.util as util
 from it.training.ibs import IBSMesh
 
+def get_camera(scene):
+    np.set_printoptions(suppress=True)
+    print(scene.camera_transform)
+
+
 if __name__ == '__main__':
     '''
     Test, generate and store IBS generated with different parameters. 
-    The parameter influence_radio_ratio is established to 2 in order to crop surfaces and keep most information of IBS 
+    The parameter influence_radio_ratio is established to 1.5 in order to crop surfaces and keep most information of IBS 
     to observe. 
     '''
 
     interactions_data = pd.read_csv("./data/interactions/interaction.csv")
-    to_test = 'ride'
+    to_test = 'hang_boater'
     interaction = interactions_data[interactions_data['interaction'] == to_test]
-
-    tri_mesh_env = trimesh.load_mesh(
-        os.path.join(interaction.iloc[0]['directory'], interaction.iloc[0]['tri_mesh_env']))
-    tri_mesh_obj = trimesh.load_mesh(
-        os.path.join(interaction.iloc[0]['directory'], interaction.iloc[0]['tri_mesh_obj']))
+    tri_mesh_env = trimesh.load_mesh(os.path.join(interaction.iloc[0]['directory'], interaction.iloc[0]['tri_mesh_env']))
+    tri_mesh_obj = trimesh.load_mesh(os.path.join(interaction.iloc[0]['directory'], interaction.iloc[0]['tri_mesh_obj']))
     obj_name = interaction.iloc[0]['obj']
     env_name = interaction.iloc[0]['env']
 
-    influence_radio_ratio = 2
+    influence_radio_bb = 2
 
-    extension, middle_point = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
+    extension, middle_point = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_bb)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
+
+    influence_radio_ratio = 1.5
 
     # calculating cropping sphere parameters
     radio, np_pivot = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     # execution parameters
-    improve_by_collission = True
+    improve_by_collision = True
     in_collision = True
     resamplings = 2
-    original_sample_size = 600
     sampled_points = 600
 
     data_frame = pd.DataFrame(columns=['obj_sample', 'env_sample', 'resamplings', 'improved_by_collision',
@@ -51,9 +54,13 @@ if __name__ == '__main__':
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    np_obj_sampled_points = np.empty([])
+    np_env_sampled_points = np.empty([])
+
+
     while in_collision:
         start = time.time()  # timing execution
-        ibs_calculator = IBSMesh(sampled_points, resamplings, improve_by_collission)
+        ibs_calculator = IBSMesh(sampled_points, resamplings, improve_by_collision)
         ibs_calculator.execute(tri_mesh_env_segmented, tri_mesh_obj)
         end = time.time()  # timing execution
         execution_time = end - start
@@ -78,19 +85,20 @@ if __name__ == '__main__':
 
         print("original_points: ", sampled_points, " final_env_points: ",
               size_env_sampled_points, " final_obj_points: ", size_obj_sampled_points)
-        print("In collission: ", in_collision)
+        print("In collision: ", in_collision)
         print("----------------------------------")
 
-        data_frame.loc[len(data_frame)] = [sampled_points, sampled_points, resamplings, improve_by_collission,
+        data_frame.loc[len(data_frame)] = [sampled_points, sampled_points, resamplings, improve_by_collision,
                                            size_obj_sampled_points, size_env_sampled_points, execution_time,
                                            in_collision, len(data)]
 
         filename = "%sibs_%s_%s_sampled_%d_resamplings_%d.ply" % (
             output_dir, env_name, obj_name, sampled_points, resamplings)
         tri_mesh_ibs.export(filename, "ply")
+
         filename = "%sibs_segmented_%s_%s_sampled_%d_resamplings_%d.ply" % (
             output_dir, env_name, obj_name, sampled_points, resamplings)
-        tri_mesh_ibs.export(filename, "ply")
+        tri_mesh_ibs_segmented.export(filename, "ply")
 
         filename = "%sibs_%s_%s_output_info.csv" % (
             output_dir, env_name, obj_name)

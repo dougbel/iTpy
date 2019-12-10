@@ -22,13 +22,13 @@ if __name__ == '__main__':
     env_name = interaction.iloc[0]['env']
     affordance_name = interaction.iloc[0]['interaction']
 
-    influence_radio_ratio = 1.5
-    extension, middle_point = util.influence_sphere(tri_mesh_obj, influence_radio_ratio)
+    influence_radio_bb = 2
+    extension, middle_point = util.influence_sphere(tri_mesh_obj, influence_radio_bb)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
-    init_size_sampling = 400
-    resamplings = 4
+    init_size_sampling = 600
+    resamplings = 2
 
     ibs_calculator = IBSMesh(init_size_sampling, resamplings)
     ibs_calculator.execute(tri_mesh_env_segmented, tri_mesh_obj)

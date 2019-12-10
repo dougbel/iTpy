@@ -1,5 +1,7 @@
 import time
 import numpy as np
+import pandas as pd
+import os
 
 import trimesh
 
@@ -11,20 +13,26 @@ if __name__ == '__main__':
     Shows the IBS calculated using meshes. Developed strategies for sampling on the object and environment surfaces 
     allow that IBS avoids pierce them.     
     '''
-    influence_radio_ratio = 2
 
-    tri_mesh_obj = trimesh.load_mesh("./data/interactions/table_bowl/bowl.ply")
-    tri_mesh_env = trimesh.load_mesh('./data/interactions/table_bowl/table.ply')
+    interactions_data = pd.read_csv("./data/interactions/interaction.csv")
+    to_test = 'place'
+    interaction = interactions_data[interactions_data['interaction'] == to_test]
+    tri_mesh_env = trimesh.load_mesh(os.path.join(interaction.iloc[0]['directory'], interaction.iloc[0]['tri_mesh_env']))
+    tri_mesh_obj = trimesh.load_mesh(os.path.join(interaction.iloc[0]['directory'], interaction.iloc[0]['tri_mesh_obj']))
+    obj_name = interaction.iloc[0]['obj']
+    env_name = interaction.iloc[0]['env']
+
+    influence_radio_ratio = 1.5
 
     extension, middle_point = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
 
     tri_mesh_env_segmented = util.slide_mesh_by_bounding_box(tri_mesh_env, middle_point, extension)
 
     start = time.time()  # timing execution
-    ibs_calculator = IBSMesh(400, 4)
+    ibs_calculator = IBSMesh(600, 2)
     ibs_calculator.execute(tri_mesh_env_segmented, tri_mesh_obj)
     end = time.time()  # timing execution
-    print(end - start, " seconds on IBS calculation (400 original points)")  # timing execution
+    print(end - start, " seconds on IBS calculation (600 original points)")  # timing execution
 
     ####################################################################################################################
     # 1. IBS VISUALIZATION

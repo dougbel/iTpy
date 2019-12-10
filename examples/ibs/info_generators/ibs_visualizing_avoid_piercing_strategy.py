@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     for sampled_points in points:
         start = time.time()  # timing execution
-        ibs_calculator = IBSMesh(sampled_points, 4)
+        ibs_calculator = IBSMesh(sampled_points, 2)
         ibs_calculator.execute(tri_mesh_env_segmented, tri_mesh_obj)
         end = time.time()  # timing execution
 
