@@ -3,6 +3,7 @@ import numpy as np
 import open3d as o3d
 from transforms3d.affines import compose
 import pandas as pd
+import math
 import time
 import os
 from it.testing.tester import Tester
@@ -83,7 +84,7 @@ def test_collision(tri_mesh_env, tri_mesh_obj, points_to_test):
     return no_collided
 
 
-def test_it(it_tester, environment, points_to_test):
+def test_it(it_tester, environment, points_to_test, np_env_normals):
     idx = 0
     progress = 0
     period = []
@@ -93,21 +94,34 @@ def test_it(it_tester, environment, points_to_test):
 
     l_good_points = []
 
-    for testing_point in points_to_test:
+    #for testing_point in points_to_test:
+    for i in range(points_to_test.shape[0]):
+        testing_point = points_to_test[i]
+        env_normal = np_env_normals[i]
+
         start = time.time()  # timing execution
 
-        analyzer = it_tester.get_analyzer(environment, testing_point)
-        angle_with_best_score = analyzer.best_angle_by_distance_by_affordance()
+        angle = util.angle_between(it_tester.envs_normals[0], env_normal)
+
+        if angle > math.pi/3:
+            first_affordance_scores = math.nan
+            orientation = math.nan
+            angle = math.nan
+            score = math.nan
+            missing = math.nan
+        else:
+            analyzer = it_tester.get_analyzer(environment, testing_point)
+            angle_with_best_score = analyzer.best_angle_by_distance_by_affordance()
+
+            first_affordance_scores = angle_with_best_score[0]
+            orientation = int(first_affordance_scores[0])
+            angle = first_affordance_scores[1]
+            score = first_affordance_scores[2]
+            missing = int(first_affordance_scores[3])
 
         end = time.time()  # timing execution
         calculation_time = end - start
         period.append(calculation_time)  # timing execution
-
-        first_affordance_scores = angle_with_best_score[0]
-        orientation = int(first_affordance_scores[0])
-        angle = first_affordance_scores[1]
-        score = first_affordance_scores[2]
-        missing = int(first_affordance_scores[3])
 
         data_frame.loc[len(data_frame)] = [testing_point[0], testing_point[1], testing_point[2], score, missing, angle,
                                            orientation, calculation_time]
@@ -151,9 +165,10 @@ if __name__ == '__main__':
     tri_mesh_obj = trimesh.load_mesh(tri_mesh_object_file)
 
     np_test_points = util.sample_points_poisson_disk(tri_mesh_env, sampling_size)
+    np_env_normals = util.get_normal_nearest_point_in_mesh(tri_mesh_env, np_test_points)
 
     # Testing iT
-    results_it_test, good_points = test_it(tester, tri_mesh_env, np_test_points)
+    results_it_test, good_points = test_it(tester, tri_mesh_env, np_test_points, np_env_normals)
 
     # Testing collision
     no_collision = test_collision(tri_mesh_env, tri_mesh_obj, np_test_points)

@@ -3,6 +3,22 @@ import numpy as np
 import math
 import open3d as o3d
 
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
+
+def angle_between(v1, v2):
+    """ Returns the angle in radians between vectors 'v1' and 'v2'::
+    >>> angle_between((1, 0, 0), (0, 1, 0))
+    1.5707963267948966
+    >>> angle_between((1, 0, 0), (1, 0, 0))
+    0.0
+    >>> angle_between((1, 0, 0), (-1, 0, 0))
+            3.141592653589793
+    """
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 def sample_points_poisson_disk(tri_mesh, number_of_points, init_factor=5):
     o3d_mesh = o3d.geometry.TriangleMesh()
@@ -12,6 +28,13 @@ def sample_points_poisson_disk(tri_mesh, number_of_points, init_factor=5):
     od3_cloud_poisson = o3d.geometry.TriangleMesh.sample_points_poisson_disk(o3d_mesh, number_of_points, init_factor)
 
     return np.asarray(od3_cloud_poisson.points)
+
+def get_normal_nearest_point_in_mesh(tri_mesh, sampled_points):
+    normals = []
+    (closest_points, distances, triangle_id) = tri_mesh.nearest.on_surface(sampled_points)
+    normals.append( tri_mesh.face_normals[triangle_id] )
+    return  np.asarray(normals).reshape(-1,3)
+
 
 
 def slide_mesh_by_bounding_box(tri_mesh, box_center, box_extension):

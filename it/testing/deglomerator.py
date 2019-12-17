@@ -21,6 +21,7 @@ class Deglomerator:
             self.num_orientations = int(self._definition['orientations'])
             self.sample_size = int(self._definition['sample_size'])
             self.influence_radio = self._definition['max_distances']['obj_influence_radio']
+            self.normal_env = np.fromstring(self._definition['trainer']['normal_env'], sep=',')
 
     def __readAgglomeratedDescriptor(self):
         base_nameU = self.__working_path + "/UNew_" + self.affordance_name + "_" + self.object_name + "_descriptor_" + str(

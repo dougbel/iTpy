@@ -34,6 +34,7 @@ class Tester:
         self.affordances = []
         self.objs_filenames = []
         self.objs_influence_radios = []
+        self.envs_normals = []
 
         index1 = 0
         index2 = increments
@@ -47,6 +48,7 @@ class Tester:
             self.affordances.append([affordance['affordance_name'], affordance['object_name']])
             self.objs_filenames.append(it_descriptor.object_filename())
             self.objs_influence_radios.append(it_descriptor.influence_radio)
+            self.envs_normals.append(it_descriptor.normal_env)
             index1 += increments
             index2 += increments
         self.compiled_pv_end = self.compiled_pv_begin + self.compiled_pv_direction
