@@ -10,7 +10,7 @@
     "PredictionT":  50
   },
   "interactions":[
-    {"affordance_name":"hang","object_name":"umbrella"}
+    {"affordance_name":"place","object_name":"bowl"}
   ]
   
 }
