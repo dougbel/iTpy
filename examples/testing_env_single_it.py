@@ -89,8 +89,8 @@ def test_it(it_tester, environment, points_to_test, np_env_normals):
     progress = 0
     period = []
 
-    data_frame = pd.DataFrame(columns=['point_x', 'point_y', 'point_z', 'score', 'missing', 'angle',
-                                       'orientation', 'calculation_time'])
+    data_frame = pd.DataFrame(columns=['point_x', 'point_y', 'point_z','point_nx', 'point_ny', 'point_nz', 'diff_ns' , 'best_score', 'missings', 'best_angle',
+                                       'best_orientation', 'calculation_time'])
 
     l_good_points = []
 
@@ -101,10 +101,9 @@ def test_it(it_tester, environment, points_to_test, np_env_normals):
 
         start = time.time()  # timing execution
 
-        angle = util.angle_between(it_tester.envs_normals[0], env_normal)
+        normals_angle = util.angle_between(it_tester.envs_normals[0], env_normal)
 
-        if angle > math.pi/3:
-            first_affordance_scores = math.nan
+        if normals_angle > math.pi/3:
             orientation = math.nan
             angle = math.nan
             score = math.nan
@@ -123,7 +122,9 @@ def test_it(it_tester, environment, points_to_test, np_env_normals):
         calculation_time = end - start
         period.append(calculation_time)  # timing execution
 
-        data_frame.loc[len(data_frame)] = [testing_point[0], testing_point[1], testing_point[2], score, missing, angle,
+        data_frame.loc[len(data_frame)] = [testing_point[0], testing_point[1], testing_point[2],
+                                           env_normal[0], env_normal[1], env_normal[2],
+                                           normals_angle, score, missing, angle,
                                            orientation, calculation_time]
 
         if score < MAX_SCORE_GOOD_POINT:
@@ -211,7 +212,6 @@ if __name__ == '__main__':
 
     # environment.show(callback=move_object)
 
-    # TODO cut partially the mesh aorund the testing point
     # TODO use libraries as cupy to work with numpy arrays
     # TODO fin alternative ray tracing approaches that uses the gpu
     # TODO generate and try scores
