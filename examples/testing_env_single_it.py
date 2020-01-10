@@ -150,7 +150,7 @@ if __name__ == '__main__':
     # TODO Test with the kitchen (artificial scene)
     # Try different combinations of distances and missing values
 
-    sampling_size = 80000
+    sampling_size = 163058
     tri_mesh_env = trimesh.load_mesh('./data/it/gates400.ply')
 
     # Load configurations for ONE interaction test
@@ -165,11 +165,20 @@ if __name__ == '__main__':
 
     tri_mesh_obj = trimesh.load_mesh(tri_mesh_object_file)
 
-    np_test_points = util.sample_points_poisson_disk(tri_mesh_env, sampling_size)
-    np_env_normals = util.get_normal_nearest_point_in_mesh(tri_mesh_env, np_test_points)
+    start = time.time()  # timing execution
+    #np_test_points = util.sample_points_poisson_disk(tri_mesh_env, sampling_size)
+    #np_env_normals = util.get_normal_nearest_point_in_mesh(tri_mesh_env, np_test_points)
+
+    np_test_points, np_env_normals = util.sample_points_poisson_disk_radius(tri_mesh_env, radius=0.01)
 
     # Testing iT
     results_it_test, good_points = test_it(tester, tri_mesh_env, np_test_points, np_env_normals)
+
+    # Execution time sample_points_poisson_disk_radius:  1405.92 with 163,058 points
+    # Execution time sample_points_poisson_disk:         1348.92 with 163,058 points
+
+    end = time.time()  # timing execution
+    print("Execution time: ", end-start)
 
     # Testing collision
     no_collision = test_collision(tri_mesh_env, tri_mesh_obj, np_test_points)

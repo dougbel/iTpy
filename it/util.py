@@ -2,6 +2,7 @@ import trimesh
 import numpy as np
 import math
 import open3d as o3d
+import point_cloud_utils as pcu
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
@@ -28,6 +29,26 @@ def sample_points_poisson_disk(tri_mesh, number_of_points, init_factor=5):
     od3_cloud_poisson = o3d.geometry.TriangleMesh.sample_points_poisson_disk(o3d_mesh, number_of_points, init_factor)
 
     return np.asarray(od3_cloud_poisson.points)
+
+def sample_points_poisson_disk_radius(tri_mesh, radius=0.01, use_geodesic_distance= True, best_choice_sampling = True):
+    """
+    Generates samples so that them are approximately evenly separated.
+    :param tri_mesh: mesh to sample
+    :param radius: the desired separation
+    :param use_geodesic_distance:
+    :param best_choice_sampling:
+    :return:
+    """
+    vertices = np.asarray(tri_mesh.vertices)
+    triangles = np.asarray(tri_mesh.faces)
+    normals = np.asarray(tri_mesh.vertex_normals, order='C')
+
+    v_poisson, n_poisson = pcu.sample_mesh_poisson_disk(vertices, triangles, normals, num_samples=-1, radius=radius,
+                                                        use_geodesic_distance=use_geodesic_distance,
+                                                        best_choice_sampling=best_choice_sampling, random_seed=0)
+
+    return v_poisson, n_poisson
+
 
 def get_normal_nearest_point_in_mesh(tri_mesh, sampled_points):
     normals = []
