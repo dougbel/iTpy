@@ -84,7 +84,7 @@ class Saver:
         # data['obj_point_vector']['vect_scene_to_object'] = '11,11,11'
 
         with open(os.path.join(self.directory, affordance_name + '_' + obj_name + '.json'), 'w') as outfile:
-            json.dump(data, outfile)
+            json.dump(data, outfile, indent=4)
 
     def _save_maxdistances(self,affordance_name, obj_name, max_distances):
        output_file = os.path.join(self.directory, affordance_name + '_' + obj_name + '_maxdistances.txt')

@@ -19,11 +19,11 @@ class Tester:
 
     def __read_json(self):
         with open(self.configuration_file) as jsonfile:
-            data = json.load(jsonfile)
+            self.configuration_data = json.load(jsonfile)
 
-        self.num_it_to_test = len(data['interactions'])
-        self.num_orientations = data['parameters']['num_orientations']
-        self.num_pv = data['parameters']['num_pv']
+        self.num_it_to_test = len(self.configuration_data['interactions'])
+        self.num_orientations = self.configuration_data['parameters']['num_orientations']
+        self.num_pv = self.configuration_data['parameters']['num_pv']
 
         increments = self.num_orientations * self.num_pv
         amount_data = self.num_it_to_test * increments
@@ -39,7 +39,7 @@ class Tester:
         index1 = 0
         index2 = increments
 
-        for affordance in data['interactions']:
+        for affordance in self.configuration_data['interactions']:
             sub_working_path = self.working_path + "/" + affordance['affordance_name']
             it_descriptor = Deglomerator(sub_working_path, affordance['affordance_name'], affordance['object_name'])
             self.compiled_pv_begin[index1:index2] = it_descriptor.pv_points
@@ -69,3 +69,6 @@ class Tester:
 
         return Analyzer(idx_ray, intersections, self.num_it_to_test, self.objs_influence_radios, self.num_orientations,
                         self.compiled_pv_end)
+
+    def __str__(self):
+        return json.dumps(self.configuration_data, indent=4)
