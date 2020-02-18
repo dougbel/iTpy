@@ -4,6 +4,26 @@ import math
 import open3d as o3d
 import point_cloud_utils as pcu
 
+def compare_nan_array(func, a, thresh):
+    """
+    Compare element of an array a using the function passed as argument (np.greater, np.greater_equal, np.less,
+    np.less_equal, np.equal, np.not_equal). Helpful to avoid RuntimeWarning provoked by comparisson
+    with math.nan values
+    Parameters
+    ----------
+    func - Function used to compare
+    a - array to compare
+    thresh - value used as threshold of the comparisson
+
+    Returns
+    -------
+    Array of boolean values with the result after comparisson with a thresh
+    """
+    out = ~np.isnan(a)
+    out[out] = func(a[out] , thresh)
+    return out
+
+
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)

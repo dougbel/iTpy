@@ -5,6 +5,7 @@ import numpy as np
 
 from transforms3d.affines import compose
 
+from it import util
 from it.testing.deglomerator import Deglomerator
 
 
@@ -128,7 +129,9 @@ class Analyzer:
             idx_from = pv_by_interaction * interaction
             idx_to = idx_from + pv_by_interaction
             to_check = filter_distances[idx_from:idx_to]
-            to_check[to_check > self.influence_radius[interaction]] = math.nan
+            greater_than = util.compare_nan_array(np.greater, to_check, self.influence_radius[interaction])
+            #to_check[to_check > self.influence_radius[interaction]] = math.nan
+            to_check[greater_than] = math.nan
             filter_distances[idx_from:idx_to] = to_check
 
         return filter_distances
