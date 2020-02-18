@@ -7,7 +7,7 @@ import open3d as o3d
 class Deglomerator:
 
     def __init__(self, working_path, affordance_name, object_name):
-        print(affordance_name + ' ' + object_name)
+        #print(affordance_name + ' ' + object_name)
         self.affordance_name = affordance_name
         self.object_name = object_name
         self.__working_path = working_path
