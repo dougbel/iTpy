@@ -53,6 +53,7 @@ class Tester:
             index2 += increments
         self.compiled_pv_end = self.compiled_pv_begin + self.compiled_pv_direction
 
+    # TODO here I have to have a filter to get only those affordances with a compatible normal in the environment
     def get_analyzer(self, scene, position):
         translation = np.asarray(position) - self.last_position
         self.compiled_pv_begin += translation

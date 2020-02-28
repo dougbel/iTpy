@@ -14,43 +14,50 @@ class EnviroTester(Tester):
 
     def start_restricted_test(self, environment, points_to_test, np_env_normals):
 
-        data_frame = pd.DataFrame(columns=['point_x', 'point_y', 'point_z','point_nx', 'point_ny', 'point_nz',
-                                           'diff_ns' , 'best_score', 'missings', 'best_angle',
-                                           'best_orientation', 'calculation_time'])
+        data_frame = pd.DataFrame(columns=['interaction',
+                                           'point_x', 'point_y', 'point_z',
+                                           'point_nx', 'point_ny', 'point_nz',
+                                           'diff_ns', 'score', 'missings',
+                                           'angle', 'orientation',
+                                           'calculation_time'])
+
+        for idx_point in trange(points_to_test.shape[0], desc='Testing on environment'):
+            testing_point = points_to_test[idx_point]
+            env_normal = np_env_normals[idx_point]
 
 
-        #for testing_point in points_to_test:
-        for i in trange(points_to_test.shape[0], desc='Testing on environment'):
-            testing_point = points_to_test[i]
-            env_normal = np_env_normals[i]
+            analyzer = None
+            angle_with_best_score = None
+            for idx_aff in range(len(self.affordances)):
+                start = time.time()  # timing execution
+                affordance = self.affordances[idx_aff][0]  # it only get the interaction not the OBJECT's NAME
+                affordance_env_normal = self.envs_normals[idx_aff]
+                normals_angle = util.angle_between(affordance_env_normal, env_normal)
 
-            start = time.time()  # timing execution
-            # TODO only work with one affordance
-            normals_angle = util.angle_between(self.envs_normals[0], env_normal)
+                if normals_angle > math.pi/3:
+                    orientation = math.nan
+                    angle = math.nan
+                    score = math.nan
+                    missing = math.nan
+                else:
+                    if analyzer is None:
+                        analyzer = self.get_analyzer(environment, testing_point)
+                        angle_with_best_score = analyzer.best_angle_by_distance_by_affordance()
 
-            if normals_angle > math.pi/3:
-                orientation = math.nan
-                angle = math.nan
-                score = math.nan
-                missing = math.nan
-            else:
-                analyzer = self.get_analyzer(environment, testing_point)
-                angle_with_best_score = analyzer.best_angle_by_distance_by_affordance()
+                    affordance_scores = angle_with_best_score[idx_aff]
+                    orientation = int(affordance_scores[0])
+                    angle = affordance_scores[1]
+                    score = affordance_scores[2]
+                    missing = int(affordance_scores[3])
 
-                # TODO permit work with multiple affordances
-                first_affordance_scores = angle_with_best_score[0]
-                orientation = int(first_affordance_scores[0])
-                angle = first_affordance_scores[1]
-                score = first_affordance_scores[2]
-                missing = int(first_affordance_scores[3])
+                end = time.time()  # timing execution
+                calculation_time = end - start
 
-            end = time.time()  # timing execution
-            calculation_time = end - start
-
-            data_frame.loc[len(data_frame)] = [testing_point[0], testing_point[1], testing_point[2],
-                                               env_normal[0], env_normal[1], env_normal[2],
-                                               normals_angle, score, missing, angle,
-                                               orientation, calculation_time]
+                data_frame.loc[len(data_frame)] = [affordance,
+                                                   testing_point[0], testing_point[1], testing_point[2],
+                                                   env_normal[0], env_normal[1], env_normal[2],
+                                                   normals_angle, score, missing, angle,
+                                                   orientation, calculation_time]
 
         return data_frame
 
