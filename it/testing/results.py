@@ -111,8 +111,7 @@ class Analyzer:
         all_distances = np.empty(len(self.expected_intersections))
         all_distances[:] = math.nan
 
-        for index, raw_distance in zip(self.idx_ray, intersections_distances):
-            all_distances[index] = raw_distance
+        all_distances[self.idx_ray] = intersections_distances
 
         return all_distances
 
