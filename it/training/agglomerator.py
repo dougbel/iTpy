@@ -7,10 +7,10 @@ from transforms3d.derivations.eulerangles import z_rotation
 
 
 class Agglomerator:
-    ORIENTATIONS = 8
+    ORIENTATIONS = None
     it_trainer = None
-    def __init__(self, it_trainer):
-
+    def __init__(self, it_trainer, num_orientations=8):
+        self.ORIENTATIONS = num_orientations
         self.it_trainer = it_trainer
 
         orientations = [x * (2 * math.pi / self.ORIENTATIONS) for x in range(0, self.ORIENTATIONS)]
