@@ -65,7 +65,7 @@ class Saver:
         data['env_name'] = env_name
         data['obj_name'] = obj_name
         #data['obj_influence_radio'],__ = util.influence_sphere(tri_mesh_obj)
-        data['sample_size'] = agglomerator.it_trainer.sampler.SAMPLE_SIZE
+        #data['sample_size'] = agglomerator.it_trainer.sampler.SAMPLE_SIZE
         data['orientations'] = agglomerator.ORIENTATIONS
         data['trainer'] = agglomerator.it_trainer.get_info()
         data['ibs_calculator'] = ibs_calculator.get_info()

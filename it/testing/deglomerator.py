@@ -6,31 +6,47 @@ import open3d as o3d
 
 class Deglomerator:
 
+    definition = None
+    num_orientations = None
+    sample_size = None
+    influence_radio = None
+    normal_env = None
+    pv_points = None
+    pv_vectors = None
+    pv_data = None
+    affordance_name = None
+    object_name = None
+    working_path = None
+
     def __init__(self, working_path, affordance_name, object_name):
         #print(affordance_name + ' ' + object_name)
         self.affordance_name = affordance_name
         self.object_name = object_name
-        self.__working_path = working_path
-        self.__read_definition()
-        self.__readAgglomeratedDescriptor()
+        self.working_path = working_path
+        self.read_definition()
+        self.readAgglomeratedDescriptor()
 
-    def __read_definition(self):
-        self._definition_file = self.__working_path + '/' + self.affordance_name + "_" + self.object_name + ".json"
-        with open(self._definition_file) as jsonfile:
-            self._definition = json.load(jsonfile)
-            self.num_orientations = int(self._definition['orientations'])
-            self.sample_size = int(self._definition['sample_size'])
-            self.influence_radio = self._definition['max_distances']['obj_influence_radio']
-            self.normal_env = np.fromstring(self._definition['trainer']['normal_env'], sep=',')
+    def read_definition(self):
+        definition_file = self.working_path + '/' + self.affordance_name + "_" + self.object_name + ".json"
+        with open(definition_file) as jsonfile:
+            self.definition = json.load(jsonfile)
+        self.num_orientations = int(self.definition['orientations'])
+        self.sample_size = int(self.definition["trainer"]["sampler"]['sample_size'])
+        self.influence_radio = self.definition['max_distances']['obj_influence_radio']
+        self.normal_env = np.fromstring(self.definition['trainer']['normal_env'], sep=',')
 
-    def __readAgglomeratedDescriptor(self):
-        base_nameU = self.__working_path + "/UNew_" + self.affordance_name + "_" + self.object_name + "_descriptor_" + str(
-            self._definition['orientations'])
+    def readAgglomeratedDescriptor(self):
+        base_nameU = self.get_agglomerated_files_name_pattern()
 
         self.pv_points = np.asarray(o3d.io.read_point_cloud(base_nameU + "_points.pcd").points)
         self.pv_vectors = np.asarray(o3d.io.read_point_cloud(base_nameU + "_vectors.pcd").points)
         self.pv_data = np.asarray(o3d.io.read_point_cloud(base_nameU + "_vdata.pcd").points)
 
     def object_filename(self):
-        obj_filename = path.join(self.__working_path, self.affordance_name + "_" + self.object_name + "_object.ply")
+        obj_filename = path.join(self.working_path, self.affordance_name + "_" + self.object_name + "_object.ply")
         return obj_filename
+
+    def get_agglomerated_files_name_pattern(self):
+        base_nameU = self.working_path + "/UNew_" + self.affordance_name + "_" + self.object_name + "_descriptor_" + str(
+            self.definition['orientations'])
+        return base_nameU

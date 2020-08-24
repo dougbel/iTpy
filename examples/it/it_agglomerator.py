@@ -47,8 +47,8 @@ if __name__ == '__main__':
 
 
     for ori in range(agg.ORIENTATIONS):
-        idx_from = ori * trainer.sampler.SAMPLE_SIZE
-        idx_to = idx_from + trainer.sampler.SAMPLE_SIZE
+        idx_from = ori * agg.sample_size
+        idx_to = idx_from + agg.sample_size
 
         pv_origin = agg.agglomerated_pv_points[idx_from:idx_to]
         pv_final = agg.agglomerated_pv_points[idx_from:idx_to] + agg.agglomerated_pv_vectors[idx_from:idx_to]

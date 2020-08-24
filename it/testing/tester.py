@@ -10,14 +10,32 @@ from it.testing.results import Analyzer, Results
 
 
 class Tester:
+    working_path = None
+    configuration_file = None
+    configuration_data = None
+
+    last_position = None
+
+    num_it_to_test = None
+    num_orientations = None
+
+    compiled_pv_begin = None
+    compiled_pv_direction = None
+    compiled_pv_end = None
+    compiled_pv_data = None
+
+    affordances = None
+    objs_filenames = None
+    objs_influence_radios = None
+    envs_normals = None
 
     def __init__(self, path, file):
         self.working_path = path
         self.configuration_file = file
         self.last_position = np.zeros(3)
-        self.__read_json()
+        self.read_json()
 
-    def __read_json(self):
+    def read_json(self):
         with open(self.configuration_file) as jsonfile:
             self.configuration_data = json.load(jsonfile)
 
