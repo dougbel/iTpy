@@ -14,7 +14,7 @@ class Tester:
     configuration_file = None
     configuration_data = None
 
-    last_position = None
+    last_position_pv_tested = None
 
     num_it_to_test = None
     num_orientations = None
@@ -32,7 +32,7 @@ class Tester:
     def __init__(self, path, file):
         self.working_path = path
         self.configuration_file = file
-        self.last_position = np.zeros(3)
+        self.last_position_pv_tested = np.zeros(3)
         self.read_json()
 
     def read_json(self):
@@ -73,11 +73,11 @@ class Tester:
 
     # TODO here I have to have a filter to get only those affordances with a compatible normal in the environment
     def get_analyzer(self, scene, position):
-        translation = np.asarray(position) - self.last_position
+        translation = np.asarray(position) - self.last_position_pv_tested
         self.compiled_pv_begin += translation
         self.compiled_pv_end += translation
-        self.last_position = position
-        # looking for the nearest ray intersections
+        self.last_position_pv_tested = position
+
         (__,
          idx_ray,
          intersections) = scene.ray.intersects_id(
