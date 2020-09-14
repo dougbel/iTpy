@@ -33,8 +33,12 @@ class EnviroTester(Tester):
                 affordance = self.affordances[idx_aff][0]  # it only get the interaction not the OBJECT's NAME
                 affordance_env_normal = self.envs_normals[idx_aff]
                 normals_angle = util.angle_between(affordance_env_normal, env_normal)
+                z_axis = [0, 0, 1]
+                z_angle_trained = util.angle_between(affordance_env_normal, z_axis)
+                z_angle_env_pos = util.angle_between(env_normal, z_axis)
+                diff_ns_z_angle = abs(z_angle_trained - z_angle_env_pos)
 
-                if normals_angle > math.pi/3:
+                if normals_angle > math.pi / 3 and diff_ns_z_angle > math.pi / 3:
                     orientation = math.nan
                     angle = math.nan
                     score = math.nan
@@ -79,8 +83,12 @@ class EnviroTester(Tester):
                 affordance = self.affordances[idx_aff][0] # it only get the interaction not the OBJECT's NAME
                 affordance_env_normal = self.envs_normals[idx_aff]
                 normals_angle = util.angle_between(affordance_env_normal, env_normal)
+                z_axis = [0, 0, 1]
+                z_angle_trained = util.angle_between(affordance_env_normal, z_axis)
+                z_angle_env_pos = util.angle_between(env_normal, z_axis)
+                diff_ns_z_angle = abs(z_angle_trained - z_angle_env_pos)
 
-                if normals_angle > math.pi / 3:
+                if normals_angle > math.pi / 3 and diff_ns_z_angle > math.pi / 3:
                     score = math.nan
                     missing = math.nan
                     angle = math.nan
