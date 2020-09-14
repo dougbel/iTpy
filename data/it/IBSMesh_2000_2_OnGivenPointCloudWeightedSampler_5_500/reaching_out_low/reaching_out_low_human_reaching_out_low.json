@@ -1,0 +1,30 @@
+{
+    "it_descriptor_version": 2.0,
+    "affordance_name": "reaching_out_low",
+    "env_name": "reachable",
+    "obj_name": "human_reaching_out_low",
+    "orientations": 8,
+    "trainer": {
+        "normal_env": "0.0,1.0,0.0",
+        "pv_max_norm": 0.06280323084696611,
+        "pv_min_norm": 0.01564840414313516,
+        "sampler": {
+            "sampler_name": "OnGivenPointCloudWeightedSampler",
+            "sample_size": 512,
+            "ibs_points": 6035,
+            "generated_random_numbers": 3017500,
+            "rate_generated_random_numbers": 500
+        }
+    },
+    "ibs_calculator": {
+        "init_size_sampling": 2000,
+        "resamplings": 2,
+        "improve_by_collision": true
+    },
+    "max_distances": {
+        "radio_ratio": 1.2,
+        "obj_influence_radio": 0.9584211563557239,
+        "sum_max_distances": 207.03540742288845,
+        "consider_collision_with_object": true
+    }
+}

@@ -100,10 +100,14 @@ def test_it(it_tester, environment, points_to_test, np_env_normals):
         env_normal = np_env_normals[i]
 
         start = time.time()  # timing execution
-
+        affordance_env_normal = it_tester.envs_normals[0]
         normals_angle = util.angle_between(it_tester.envs_normals[0], env_normal)
+        z_axis = [0, 0, 1]
+        z_angle_trained = util.angle_between(affordance_env_normal, z_axis)
+        z_angle_env_pos = util.angle_between(env_normal, z_axis)
+        diff_ns_z_angle = abs(z_angle_trained - z_angle_env_pos)
 
-        if normals_angle > math.pi/3:
+        if normals_angle > math.pi / 3 and diff_ns_z_angle > math.pi / 3:
             orientation = math.nan
             angle = math.nan
             score = math.nan
@@ -150,11 +154,10 @@ if __name__ == '__main__':
     # TODO Test with the kitchen (artificial scene)
     # Try different combinations of distances and missing values
 
-    sampling_size = 163058
-    tri_mesh_env = trimesh.load_mesh('./data/it/gates400.ply')
+    tri_mesh_env = trimesh.load_mesh('./data/it/scene0000_00_vh_clean2.ply')
 
     # Load configurations for ONE interaction test
-    directory_of_trainings = "./data/it/IBSMesh_400_4_OnGivenPointCloudWeightedSampler_5_500"
+    directory_of_trainings = "./data/it/IBSMesh_2000_2_OnGivenPointCloudWeightedSampler_5_500"
     json_conf_execution_file = directory_of_trainings + "/single_testing.json"
 
     tester = Tester(directory_of_trainings, json_conf_execution_file)
@@ -166,10 +169,11 @@ if __name__ == '__main__':
     tri_mesh_obj = trimesh.load_mesh(tri_mesh_object_file)
 
     start = time.time()  # timing execution
+    # sampling_size = 163058
     #np_test_points = util.sample_points_poisson_disk(tri_mesh_env, sampling_size)
     #np_env_normals = util.get_normal_nearest_point_in_mesh(tri_mesh_env, np_test_points)
 
-    np_test_points, np_env_normals = util.sample_points_poisson_disk_radius(tri_mesh_env, radius=0.01)
+    np_test_points, np_env_normals = util.sample_points_poisson_disk_radius(tri_mesh_env, radius=0.1)
 
     # Testing iT
     results_it_test, good_points = test_it(tester, tri_mesh_env, np_test_points, np_env_normals)
