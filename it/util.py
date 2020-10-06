@@ -71,6 +71,14 @@ def sample_points_poisson_disk_radius(tri_mesh, radius=0.01, use_geodesic_distan
 
 
 def get_normal_nearest_point_in_mesh(tri_mesh, sampled_points):
+    """
+    Get the normal of the nearest point in mesh
+    CAUTION: It generates files while calculating, it seems that using in a parallel way could generate some crash
+    in execution
+    :param tri_mesh:
+    :param sampled_points:
+    :return:
+    """
     normals = []
     (closest_points, distances, triangle_id) = tri_mesh.nearest.on_surface(sampled_points)
     normals.append( tri_mesh.face_normals[triangle_id] )
