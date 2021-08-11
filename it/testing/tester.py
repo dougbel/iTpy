@@ -59,14 +59,14 @@ class Tester:
 
         for affordance in self.configuration_data['interactions']:
             sub_working_path = self.working_path + "/" + affordance['affordance_name']
-            it_descriptor = Deglomerator(sub_working_path, affordance['affordance_name'], affordance['object_name'])
-            self.compiled_pv_begin[index1:index2] = it_descriptor.pv_points
-            self.compiled_pv_direction[index1:index2] = it_descriptor.pv_vectors
-            self.compiled_pv_data[index1:index2] = it_descriptor.pv_data
+            self.it_descriptor = Deglomerator(sub_working_path, affordance['affordance_name'], affordance['object_name'])
+            self.compiled_pv_begin[index1:index2] = self.it_descriptor.pv_points
+            self.compiled_pv_direction[index1:index2] = self.it_descriptor.pv_vectors
+            self.compiled_pv_data[index1:index2] = self.it_descriptor.pv_data
             self.affordances.append([affordance['affordance_name'], affordance['object_name']])
-            self.objs_filenames.append(it_descriptor.object_filename())
-            self.objs_influence_radios.append(it_descriptor.influence_radio)
-            self.envs_normals.append(it_descriptor.normal_env)
+            self.objs_filenames.append(self.it_descriptor.object_filename())
+            self.objs_influence_radios.append(self.it_descriptor.influence_radio)
+            self.envs_normals.append(self.it_descriptor.normal_env)
             index1 += increments
             index2 += increments
         self.compiled_pv_end = self.compiled_pv_begin + self.compiled_pv_direction
