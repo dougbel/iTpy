@@ -30,32 +30,48 @@ class IBS:
         for env_idx_region in self.voro.point_region[:self.size_cloud_env]:
             # voronoi region of environment point
             # regions: Indices of the Voronoi vertices forming each Voronoi region
-            env_idx_vertices += self.voro.regions[env_idx_region]
+            env_idx_vertices.extend(self.voro.regions[env_idx_region])
 
         for obj_idx_region in self.voro.point_region[self.size_cloud_env:]:
             # voronoi region of object point
-            obj_idx_vertices += self.voro.regions[obj_idx_region]
+            obj_idx_vertices.extend(self.voro.regions[obj_idx_region])
 
-        env_idx_vertices = list(set(env_idx_vertices))
-        obj_idx_vertices = list(set(obj_idx_vertices))
+        env_idx_vertices = set(env_idx_vertices)
+        obj_idx_vertices = set(obj_idx_vertices)
 
-        idx_ibs_vertices = [vertex for vertex in env_idx_vertices if vertex in obj_idx_vertices]
+        idx_ibs_vertices = list(env_idx_vertices.intersection(obj_idx_vertices))
+        # idx_ibs_vertices.sort(reverse=True)
 
         # avoid index "-1" for vertices extraction
-        valid_index = [idx for idx in idx_ibs_vertices if idx != -1]
-        self.vertices = self.voro.vertices[valid_index]
+        # valid_index = list(filter(lambda idx: idx != -1, idx_ibs_vertices))
+        # valid_index = [idx for idx in idx_ibs_vertices if idx != -1]
+        try:
+            idx_ibs_vertices.pop(idx_ibs_vertices.index(-1))
+            self.vertices = self.voro.vertices[idx_ibs_vertices]
+        except ValueError as e:
+            self.vertices = self.voro.vertices[idx_ibs_vertices]
+
+        points_in_voronoi = np.full(len(self.voro.vertices)+1, False, dtype=bool)
+        points_in_voronoi[idx_ibs_vertices] = True
+        points_in_voronoi[-1]=True # this is for the -1 value (vertex on the infinite)
+        points_in_voronoi_mapping_to = np.empty(len(self.voro.vertices)+1, dtype=int)
+        for idx in range(len(idx_ibs_vertices)):
+            points_in_voronoi_mapping_to[ idx_ibs_vertices[idx] ] = idx
+        points_in_voronoi_mapping_to[-1] = -1
 
         # generate ridge vertices lists
         self.ridge_vertices = []  # Indices of the Voronoi vertices forming each Voronoi ridge
         self.ridge_points = []  # Indices of the points between which each Voronoi ridge lie
         for i in range(len(self.voro.ridge_vertices)):
+
             ridge = self.voro.ridge_vertices[i]
-            ridge_points = self.voro.ridge_points[i]
+            #print("ridge "+len(self.voro.ridge_vertices[i])+", ridge_points" + len(self.voro.ridge_points) )
             # only process ridges in which all vertices are defined in ridges defined by Voronoi
-            if all(idx_vertice in idx_ibs_vertices for idx_vertice in ridge):
-                mapped_idx_ridge = [(idx_ibs_vertices.index(idx_vertice) if idx_vertice != -1 else -1) for idx_vertice
-                                    in ridge]
-                self.ridge_vertices.append(mapped_idx_ridge)
+            if all(points_in_voronoi[ridge]):
+                mapped_idx_ridge = points_in_voronoi_mapping_to[ridge]
+                self.ridge_vertices.append(tuple(mapped_idx_ridge))
+
+                ridge_points = self.voro.ridge_points[i]
                 self.ridge_points.append(ridge_points)
 
     def get_trimesh(self):
@@ -63,8 +79,12 @@ class IBS:
         for ridge in self.ridge_vertices:
             if -1 in ridge:
                 continue
-            for pos in range(len(ridge) - 2):
-                tri_faces.append([ridge[-1], ridge[pos], ridge[pos + 1]])
+            l_ridge = len(ridge)
+            if l_ridge ==3:
+                tri_faces.append(ridge)
+            else:
+                for pos in range(l_ridge - 2):
+                    tri_faces.append((ridge[-1], ridge[pos], ridge[pos + 1]))
 
         mesh = trimesh.Trimesh(vertices=self.vertices, faces=tri_faces)
         mesh.fix_normals()

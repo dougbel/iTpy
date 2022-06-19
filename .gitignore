@@ -10,3 +10,5 @@ output/
 it/testing/__pycache__/
 
 \.idea/
+
+*/__pycache__/*

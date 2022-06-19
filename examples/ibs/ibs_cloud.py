@@ -45,11 +45,18 @@ if __name__ == '__main__':
     tri_cloud_ibs_vertices_extracted = trimesh.points.PointCloud(np_ibs_vertices_extracted, colors=[0, 0, 255, 255])
     tri_path_ibs_edges_extracted = trimesh.load_path(np.hstack((edges_from, edges_to)).reshape(-1, 2, 3))
 
+    tri_mesh_ibs = ibs_calculator.get_trimesh()
+    # tri_mesh_ibs = tri_mesh_ibs.subdivide()
+
+    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
+
+    tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro, 16)
+
     visualizer = trimesh.Scene([tri_cloud_ibs_vertices_extracted, tri_cloud_obj,
-                                tri_cloud_env, tri_path_ibs_edges_extracted])
+                                tri_cloud_env, tri_path_ibs_edges_extracted])#, tri_mesh_ibs_segmented])
 
     # display the environment with callback
-    visualizer.show()
+    visualizer.show(flags={'cull': False, 'wireframe': False, 'axis': False})
 
     ################################################################################################
     # ##   2.  EXECUTION WITH 10,000 POINTS IN OBJECT AND ENVIRONMENT RESPECTIVELY
@@ -82,8 +89,15 @@ if __name__ == '__main__':
     tri_cloud_ibs_vertices_extracted = trimesh.points.PointCloud(np_ibs_vertices_extracted, colors=[0, 0, 255, 255])
     tri_path_ibs_edges_extracted = trimesh.load_path(np.hstack((edges_from, edges_to)).reshape(-1, 2, 3))
 
+    tri_mesh_ibs = ibs_calculator.get_trimesh()
+    # tri_mesh_ibs = tri_mesh_ibs.subdivide()
+
+    sphere_ro, sphere_center = util.influence_sphere(tri_mesh_obj, radio_ratio=influence_radio_ratio)
+
+    tri_mesh_ibs_segmented = util.slide_mesh_by_sphere(tri_mesh_ibs, sphere_center, sphere_ro, 16)
+
     visualizer = trimesh.Scene([tri_cloud_ibs_vertices_extracted, tri_cloud_obj,
-                                tri_cloud_env, tri_path_ibs_edges_extracted])
+                                tri_cloud_env, tri_path_ibs_edges_extracted])#, tri_mesh_ibs_segmented])
 
     # display the environment with callback
     visualizer.show()
